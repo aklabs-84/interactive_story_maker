@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>▶️ 스토리 체험 - 인터랙티브 스토리 메이커</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/common.css">
+  <style>
+    /* 공유 모드에서 네비게이션 숨기기 */
+    body.shared-mode .main-nav { display: none; }
+    body.shared-mode .mobile-nav { display: none; }
+  </style>
+</head>
+<body>
+  <div id="animationLayer" class="animation-layer"></div>
+
+  <div class="relative z-10 min-h-screen flex flex-col">
+    <!-- 헤더 -->
+    <header class="header-wrapper sticky top-0 z-50">
+      <div class="header-inner max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16 md:h-20 gap-4">
+          <!-- 로고 -->
+          <a href="index.html" class="flex items-center gap-3 flex-shrink-0">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center shadow-lg">
+              <span class="text-xl">▶️</span>
+            </div>
+            <div class="hidden sm:block">
+              <h1 class="text-lg font-bold tracking-tight" id="pageTitle">스토리 체험</h1>
+              <p class="text-xs text-slate-400" id="pageSubtitle">인터랙티브 스토리 메이커</p>
+            </div>
+          </a>
+
+          <!-- 네비게이션 + 컨트롤 -->
+          <div class="flex items-center gap-2 md:gap-3">
+            <!-- 데스크톱 네비게이션 -->
+            <nav class="main-nav hidden lg:flex items-center gap-1 flex-shrink-0">
+              <a href="editor.html" class="nav-link">✏️ 만들기</a>
+              <a href="player.html" class="nav-link active">▶️ 체험</a>
+              <a href="manager.html" class="nav-link">💾 내 스토리</a>
+            </nav>
+
+            <!-- 테마 선택 -->
+            <select id="themeSelector" class="theme-select hidden sm:block text-sm px-2 py-2 bg-white/5 border border-white/10 rounded-lg cursor-pointer hover:bg-white/10 transition flex-shrink-0">
+              <option value="christmas">🎄 크리스마스</option>
+              <option value="space">🚀 우주</option>
+              <option value="fantasy">🧙 판타지</option>
+              <option value="school">🏫 학교</option>
+              <option value="summer">🏖️ 여름</option>
+              <option value="autumn">🍂 가을</option>
+            </select>
+
+            <!-- 모드 토글 버튼 -->
+            <button id="modeToggle" class="w-10 h-10 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center transition text-xl flex-shrink-0" title="라이트/다크 모드 전환">
+              <span class="mode-icon">🌙</span>
+            </button>
+
+            <!-- 사운드 토글 버튼 -->
+            <button id="soundToggle" class="w-10 h-10 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center transition text-xl flex-shrink-0">
+              <span class="sound-icon">🔊</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 모바일/태블릿 네비게이션 -->
+        <nav class="mobile-nav lg:hidden flex items-center gap-2 pb-3 overflow-x-auto">
+          <a href="editor.html" class="nav-link">✏️ 만들기</a>
+          <a href="player.html" class="nav-link active">▶️ 체험</a>
+          <a href="manager.html" class="nav-link">💾 내 스토리</a>
+          <select id="themeSelectorMobile" class="theme-select-mobile sm:hidden text-sm px-2 py-1 bg-white/5 border border-white/10 rounded-lg cursor-pointer flex-shrink-0">
+            <option value="christmas">🎄</option>
+            <option value="space">🚀</option>
+            <option value="fantasy">🧙</option>
+            <option value="school">🏫</option>
+            <option value="summer">🏖️</option>
+            <option value="autumn">🍂</option>
+          </select>
+        </nav>
+      </div>
+    </header>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="workspace page-shell flex-1 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-6 w-full">
+      <section class="card fade-in">
+        <div class="section-head">
+          <div class="title text-xl">
+            <span>▶️</span>
+            <span>스토리 체험</span>
+          </div>
+          <span class="pill">가장 최근 스토리부터 자동 로드</span>
+        </div>
+        <p class="section-sub">저장된 스토리를 불러오거나 공유 링크로 바로 체험하세요.</p>
+      </section>
+
+      <section class="card soft-card">
+        <div id="playerContent">
+          <!-- 플레이어 콘텐츠가 여기에 표시됩니다 -->
+          <div class="text-center py-12 text-slate-400">
+            <div class="loading-spinner mx-auto mb-4" style="width: 50px; height: 50px; border-width: 4px;"></div>
+            <p class="text-lg">스토리를 불러오는 중...</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- 푸터 -->
+    <footer class="footer-wrapper py-6 text-center text-sm">
+      <p>© 2025 인터랙티브 스토리 메이커 · 교육용 프로젝트 · Made with ❤️</p>
+      <p class="mt-2">
+        <a href="https://litt.ly/aklabs" target="_blank" rel="noopener noreferrer" class="text-cyan-400 hover:text-cyan-300 transition">
+          🚀 AK Labs 홈페이지 방문하기
+        </a>
+      </p>
+    </footer>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/sound.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/spreadsheet.js"></script>
+  <script src="js/player.js"></script>
+</body>
+</html>

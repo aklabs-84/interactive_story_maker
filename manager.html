@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>💾 내 스토리 - 인터랙티브 스토리 메이커</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/common.css">
+</head>
+<body>
+  <div id="animationLayer" class="animation-layer"></div>
+
+  <div class="relative z-10 min-h-screen flex flex-col">
+    <!-- 헤더 -->
+    <header class="header-wrapper sticky top-0 z-50">
+      <div class="header-inner max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16 md:h-20 gap-4">
+          <!-- 로고 -->
+          <a href="index.html" class="flex items-center gap-3 flex-shrink-0">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center shadow-lg">
+              <span class="text-xl">💾</span>
+            </div>
+            <div class="hidden sm:block">
+              <h1 class="text-lg font-bold tracking-tight">내 스토리</h1>
+              <p class="text-xs text-slate-400">저장된 스토리 관리</p>
+            </div>
+          </a>
+
+          <!-- 네비게이션 + 컨트롤 -->
+          <div class="flex items-center gap-2 md:gap-3">
+            <!-- 데스크톱 네비게이션 -->
+            <nav class="hidden lg:flex items-center gap-1 flex-shrink-0">
+              <a href="editor.html" class="nav-link">✏️ 만들기</a>
+              <a href="player.html" class="nav-link">▶️ 체험</a>
+              <a href="manager.html" class="nav-link active">💾 내 스토리</a>
+            </nav>
+
+            <!-- 테마 선택 -->
+            <select id="themeSelector" class="theme-select hidden sm:block text-sm px-2 py-2 bg-white/5 border border-white/10 rounded-lg cursor-pointer hover:bg-white/10 transition flex-shrink-0">
+              <option value="christmas">🎄 크리스마스</option>
+              <option value="space">🚀 우주</option>
+              <option value="fantasy">🧙 판타지</option>
+              <option value="school">🏫 학교</option>
+              <option value="summer">🏖️ 여름</option>
+              <option value="autumn">🍂 가을</option>
+            </select>
+
+            <!-- 모드 토글 버튼 -->
+            <button id="modeToggle" class="w-10 h-10 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center transition text-xl flex-shrink-0" title="라이트/다크 모드 전환">
+              <span class="mode-icon">🌙</span>
+            </button>
+
+            <!-- 사운드 토글 버튼 -->
+            <button id="soundToggle" class="w-10 h-10 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center transition text-xl flex-shrink-0">
+              <span class="sound-icon">🔊</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 모바일/태블릿 네비게이션 -->
+        <nav class="lg:hidden flex items-center gap-2 pb-3 overflow-x-auto">
+          <a href="editor.html" class="nav-link">✏️ 만들기</a>
+          <a href="player.html" class="nav-link">▶️ 체험</a>
+          <a href="manager.html" class="nav-link active">💾 내 스토리</a>
+          <select id="themeSelectorMobile" class="theme-select-mobile sm:hidden text-sm px-2 py-1 bg-white/5 border border-white/10 rounded-lg cursor-pointer flex-shrink-0">
+            <option value="christmas">🎄</option>
+            <option value="space">🚀</option>
+            <option value="fantasy">🧙</option>
+            <option value="school">🏫</option>
+            <option value="summer">🏖️</option>
+            <option value="autumn">🍂</option>
+          </select>
+        </nav>
+      </div>
+    </header>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="workspace page-shell flex-1 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-6 w-full">
+      <section class="card fade-in">
+        <div class="section-head">
+          <div class="title text-xl">
+            <span>💾</span>
+            <span>내 스토리 보관함</span>
+          </div>
+          <span class="pill">로컬 + 스프레드시트 동기화</span>
+        </div>
+        <p class="section-sub">저장한 스토리를 확인하고 공유하거나 바로 체험해보세요.</p>
+      </section>
+
+      <!-- JSON 파일 불러오기 섹션 -->
+      <section class="card soft-card">
+        <div class="section-head">
+          <div class="title">📥 스토리 불러오기</div>
+        </div>
+        <p class="text-sm text-slate-400 mb-4">JSON 파일을 업로드하여 스토리를 가져올 수 있습니다.</p>
+        <div class="flex gap-3 items-start">
+          <input type="file" id="jsonFileInput" accept=".json,application/json" class="flex-1">
+          <button type="button" id="uploadJsonBtn" class="px-4 py-2 bg-green-500 hover:bg-green-600 rounded-lg text-sm font-medium whitespace-nowrap">불러오기</button>
+        </div>
+      </section>
+
+      <section class="card soft-card">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+          <h2 class="text-lg font-semibold flex items-center gap-2">
+            <span>📚</span>
+            <span>저장된 스토리</span>
+          </h2>
+
+          <!-- 최신 스토리 공유 버튼 -->
+          <button id="shareLatestBtn" class="btn-primary px-4 py-2 bg-indigo-500 hover:bg-indigo-600 rounded-lg font-medium text-sm flex items-center gap-2 w-full sm:w-auto justify-center">
+            <span>🔗</span>
+            <span>최신 스토리 공유</span>
+          </button>
+        </div>
+
+        <div id="savedStoriesList" class="space-y-3">
+          <!-- 저장된 스토리 목록 -->
+          <div class="text-center py-8 text-slate-400">
+            <div class="loading-spinner mx-auto mb-4" style="width: 40px; height: 40px; border-width: 3px;"></div>
+            <p>스토리 목록을 불러오는 중...</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- 푸터 -->
+    <footer class="footer-wrapper py-6 text-center text-sm">
+      <p>© 2025 인터랙티브 스토리 메이커 · 교육용 프로젝트 · Made with ❤️</p>
+      <p class="mt-2">
+        <a href="https://litt.ly/aklabs" target="_blank" rel="noopener noreferrer" class="text-cyan-400 hover:text-cyan-300 transition">
+          🚀 AK Labs 홈페이지 방문하기
+        </a>
+      </p>
+    </footer>
+  </div>
+
+  <!-- 공유 모달 -->
+  <div id="shareModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4" style="background: rgba(0,0,0,0.8);">
+    <div class="card max-w-md w-full">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-xl font-bold flex items-center gap-2">
+          <span>🔗</span>
+          <span>스토리 공유하기</span>
+        </h3>
+        <button id="closeShareModal" class="w-10 h-10 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center">✕</button>
+      </div>
+      <p class="text-sm text-slate-400 mb-2" id="shareStoryTitle"></p>
+      <p class="text-xs text-slate-500 mb-4">아래 링크를 복사하여 친구들과 공유하세요!</p>
+      <div class="flex gap-2">
+        <input type="text" id="shareUrlInput" class="flex-1 text-sm" readonly>
+        <button id="copyShareUrl" class="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 rounded-lg font-medium transition flex items-center gap-2">
+          <span>📋</span>
+          <span>복사</span>
+        </button>
+      </div>
+      <p class="text-xs text-slate-500 mt-3">💡 이 링크로 접속하면 스토리 체험 페이지로 바로 이동합니다.</p>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/sound.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/spreadsheet.js"></script>
+  <script src="js/manager.js"></script>
+</body>
+</html>

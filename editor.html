@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>✏️ 스토리 만들기 - 인터랙티브 스토리 메이커</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/common.css">
+</head>
+<body>
+  <div id="animationLayer" class="animation-layer"></div>
+
+  <div class="relative z-10 min-h-screen flex flex-col">
+    <!-- 헤더 -->
+    <header class="header-wrapper sticky top-0 z-50">
+      <div class="header-inner max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16 md:h-20 gap-4">
+          <!-- 로고 -->
+          <a href="index.html" class="flex items-center gap-3 flex-shrink-0">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center shadow-lg">
+              <span class="text-xl">📖</span>
+            </div>
+            <div class="hidden sm:block">
+              <h1 class="text-lg font-bold tracking-tight">스토리 만들기</h1>
+              <p class="text-xs text-slate-400">새로운 이야기를 만들어보세요</p>
+            </div>
+          </a>
+
+          <!-- 네비게이션 + 컨트롤 -->
+          <div class="flex items-center gap-2 md:gap-3">
+            <!-- 데스크톱 네비게이션 -->
+            <nav class="hidden lg:flex items-center gap-1 flex-shrink-0">
+              <a href="editor.html" class="nav-link active">✏️ 만들기</a>
+              <a href="player.html" class="nav-link">▶️ 체험</a>
+              <a href="manager.html" class="nav-link">💾 내 스토리</a>
+            </nav>
+
+            <!-- 테마 선택 -->
+            <select id="themeSelector" class="theme-select hidden sm:block text-sm px-2 py-2 bg-white/5 border border-white/10 rounded-lg cursor-pointer hover:bg-white/10 transition flex-shrink-0">
+              <option value="christmas">🎄 크리스마스</option>
+              <option value="space">🚀 우주</option>
+              <option value="fantasy">🧙 판타지</option>
+              <option value="school">🏫 학교</option>
+              <option value="summer">🏖️ 여름</option>
+              <option value="autumn">🍂 가을</option>
+            </select>
+
+            <!-- 모드 토글 버튼 -->
+            <button id="modeToggle" class="w-10 h-10 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center transition text-xl flex-shrink-0" title="라이트/다크 모드 전환">
+              <span class="mode-icon">🌙</span>
+            </button>
+
+            <!-- 사운드 토글 버튼 -->
+            <button id="soundToggle" class="w-10 h-10 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center transition text-xl flex-shrink-0">
+              <span class="sound-icon">🔊</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 모바일/태블릿 네비게이션 -->
+        <nav class="lg:hidden flex items-center gap-2 pb-3 overflow-x-auto">
+          <a href="editor.html" class="nav-link active">✏️ 만들기</a>
+          <a href="player.html" class="nav-link">▶️ 체험</a>
+          <a href="manager.html" class="nav-link">💾 내 스토리</a>
+          <select id="themeSelectorMobile" class="theme-select-mobile sm:hidden text-sm px-2 py-1 bg-white/5 border border-white/10 rounded-lg cursor-pointer flex-shrink-0">
+            <option value="christmas">🎄</option>
+            <option value="space">🚀</option>
+            <option value="fantasy">🧙</option>
+            <option value="school">🏫</option>
+            <option value="summer">🏖️</option>
+            <option value="autumn">🍂</option>
+          </select>
+        </nav>
+      </div>
+    </header>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="workspace page-shell flex-1 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-6 w-full">
+      <section class="card fade-in">
+        <div class="section-head">
+          <div class="title text-xl">
+            <span>✏️</span>
+            <span>새로운 스토리 만들기</span>
+          </div>
+          <span class="pill">가볍게 입력하고 바로 미리보기</span>
+        </div>
+        <p class="section-sub">기본 정보와 시작 문장, 선택지를 한 화면에서 빠르게 작성하세요.</p>
+      </section>
+
+      <div class="workspace-grid">
+        <section class="card soft-card">
+          <div class="section-head">
+            <div class="title">📋 기본 정보</div>
+            <span class="pill">필수 · 제목/설명</span>
+          </div>
+          <div class="form-grid">
+            <div class="input-group">
+              <label>제목 <span class="text-red-400">*</span></label>
+              <input type="text" id="storyTitle" placeholder="예: 마법의 숲 모험" maxlength="50">
+            </div>
+            <div class="input-group">
+              <label>작성자 이름</label>
+              <input type="text" id="storyAuthor" placeholder="예: 홍길동" maxlength="30">
+            </div>
+            <div class="input-group full-span">
+              <label>설명</label>
+              <textarea id="storyDescription" placeholder="이 스토리에 대한 간단한 설명을 입력하세요" class="h-20 resize-none" maxlength="200"></textarea>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="section-head">
+            <div class="title">🧭 작성 가이드</div>
+          </div>
+          <div class="space-y-3 text-sm text-slate-400">
+            <p class="text-slate-300">1) 제목과 시작 문장을 먼저 채우세요.</p>
+            <p>2) A와 B 선택지를 작성하고, 이어지는 이야기를 입력하세요.</p>
+            <p>3) 각 선택지에서 "➕ 하위 선택지 추가"를 누르면 그 선택지만의 분기가 생깁니다.</p>
+            <p>4) 더 이상 이어지지 않을 경우 "🏁 엔딩으로" 버튼을 눌러 마무리하세요.</p>
+          </div>
+        </section>
+      </div>
+
+      <section class="card soft-card">
+        <div class="section-head">
+          <div class="title">🌟 시작 이야기</div>
+          <span class="pill">첫 장면과 분위기 설정</span>
+        </div>
+        <div class="space-y-4">
+          <div class="input-group mb-0">
+            <label>시작 이야기 <span class="text-red-400">*</span></label>
+            <textarea id="startStory" placeholder="주인공이 처음 마주하는 상황을 적어주세요..." class="h-32 resize-none" maxlength="500"></textarea>
+            <p class="helper-text">💡 첫 장면을 짧고 선명하게 적으면 선택지를 만들기 쉬워집니다.</p>
+          </div>
+          <div class="input-group mb-0">
+            <label>시작 이미지 (선택사항)</label>
+            <div class="flex gap-3 items-start">
+              <input type="file" id="startImageFile" accept="image/*" class="flex-1">
+              <button type="button" id="uploadStartImage" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg text-sm font-medium whitespace-nowrap">업로드</button>
+            </div>
+            <input type="hidden" id="startImage">
+            <div id="startImagePreview" class="mt-2"></div>
+            <p class="helper-text">💡 최대 2MB까지 업로드 가능합니다</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="card soft-card">
+        <div class="section-head">
+          <div class="title">🔀 선택지 작성</div>
+        </div>
+        <p class="help-text mb-4">A와 B 선택지를 작성하세요. 각 선택지마다 "➕ 하위 선택지 추가" 버튼을 누르면 그 선택지 아래에 새로운 A, B 선택지가 추가됩니다.</p>
+        <div id="choiceGroupsContainer" class="choice-stack"></div>
+      </section>
+
+      <section class="card action-bar border border-white/5">
+        <button id="saveStoryBtn" class="btn-primary px-6 py-3 bg-green-500 hover:bg-green-600 rounded-lg font-medium flex items-center gap-2 justify-center">
+          <span>💾</span>
+          <span>저장하기</span>
+        </button>
+        <button id="previewStoryBtn" class="btn-primary px-6 py-3 bg-blue-500 hover:bg-blue-600 rounded-lg font-medium flex items-center gap-2 justify-center">
+          <span>👁️</span>
+          <span>미리보기</span>
+        </button>
+        <button id="playStoryBtn" class="btn-primary px-6 py-3 bg-purple-500 hover:bg-purple-600 rounded-lg font-medium flex items-center gap-2 justify-center">
+          <span>▶️</span>
+          <span>체험하기</span>
+        </button>
+        <button id="clearEditorBtn" class="px-6 py-3 bg-red-500/20 hover:bg-red-500/30 rounded-lg font-medium border border-red-500/50 flex items-center gap-2 justify-center">
+          <span>🗑️</span>
+          <span>전체 지우기</span>
+        </button>
+      </section>
+    </main>
+
+    <!-- 푸터 -->
+    <footer class="footer-wrapper py-6 text-center text-sm">
+      <p>© 2025 인터랙티브 스토리 메이커 · 교육용 프로젝트 · Made with ❤️</p>
+      <p class="mt-2">
+        <a href="https://litt.ly/aklabs" target="_blank" rel="noopener noreferrer" class="text-cyan-400 hover:text-cyan-300 transition">
+          🚀 AK Labs 홈페이지 방문하기
+        </a>
+      </p>
+    </footer>
+  </div>
+
+  <!-- 미리보기 모달 -->
+  <div id="previewModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4" style="background: rgba(0,0,0,0.8);"></div>
+
+  <script src="js/config.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/sound.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/spreadsheet.js"></script>
+  <script src="js/editor.js"></script>
+</body>
+</html>
