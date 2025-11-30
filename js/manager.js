@@ -7,11 +7,32 @@ const ManagerModule = {
 
   renderStoriesList() {
     const container = document.getElementById('savedStoriesList');
+    const { id: currentUserId, name: currentUserName } = UserModule.ensureProfile();
     const allStories = StorageModule.getAllStories();
+
+    // ownerId가 없는 기존 스토리는 현재 사용자 소유로 귀속
+    let normalizedStories = allStories.map(story => {
+      if (story?.metadata && !story.metadata.ownerId) {
+        return {
+          ...story,
+          metadata: { ...story.metadata, ownerId: currentUserId }
+        };
+      }
+      return story;
+    });
+
+    // 변경사항이 있으면 저장
+    const needsSave = normalizedStories.some((story, idx) => story !== allStories[idx]);
+    if (needsSave) {
+      StorageModule.saveStoriesOrder(normalizedStories);
+    }
+
+    // 현재 사용자 스토리만 필터
+    normalizedStories = normalizedStories.filter(story => story?.metadata?.ownerId === currentUserId);
 
     // 중복 제거: ID를 기준으로 유니크한 스토리만 표시 (최신 것만 유지)
     const uniqueStoriesMap = new Map();
-    allStories.forEach(story => {
+    normalizedStories.forEach(story => {
       if (!uniqueStoriesMap.has(story.id)) {
         uniqueStoriesMap.set(story.id, story);
       }
@@ -22,7 +43,7 @@ const ManagerModule = {
       container.innerHTML = `
         <div class="text-center py-8 text-slate-400">
           <div class="text-6xl mb-4">📭</div>
-          <p class="text-lg mb-2">저장된 스토리가 없습니다</p>
+          <p class="text-lg mb-2">${currentUserName}님의 스토리가 없습니다</p>
           <p class="text-sm mb-6">스토리를 만들고 저장해보세요!</p>
           <a href="editor.html" class="create-story-btn px-6 py-3 bg-slate-800 hover:bg-slate-900 text-white rounded-lg font-medium transition inline-block">✏️ 스토리 만들기</a>
         </div>
@@ -31,7 +52,10 @@ const ManagerModule = {
     }
     
     container.innerHTML = `
-      <p class="text-xs text-slate-400 mb-3">💡 드래그하여 순서를 변경할 수 있습니다. 맨 위가 최신 스토리입니다.</p>
+      <div class="flex items-center justify-between gap-3 mb-3 flex-wrap">
+        <p class="text-xs text-slate-400">💡 드래그하여 순서를 변경할 수 있습니다. 맨 위가 최신 스토리입니다.</p>
+        <span class="px-2 py-1 bg-white/5 border border-white/10 rounded-full text-[11px] text-slate-300">🔒 ${currentUserName}님의 스토리만 표시 중</span>
+      </div>
       ${stories.map((story, index) => `
         <div class="story-item p-4 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition" 
              data-story-id="${story.id}" 
@@ -247,8 +271,9 @@ const ManagerModule = {
   },
 
   async shareLatestFromSpreadsheet() {
-    // 로컬에 저장된 스토리 목록 가져오기
-    const stories = StorageModule.getAllStories();
+    // 로컬에 저장된 스토리 목록 가져오기 (내 스토리만)
+    const currentUserId = UserModule.ensureProfile().id;
+    const stories = StorageModule.getAllStories().filter(story => story?.metadata?.ownerId === currentUserId);
 
     if (stories.length === 0) {
       showToast('❌ 저장된 스토리가 없습니다', 'error');
@@ -350,6 +375,7 @@ function initManagerPage() {
       try {
         const jsonContent = e.target.result;
         const story = JSON.parse(jsonContent);
+        const currentUser = UserModule.ensureProfile();
 
         // 기본 구조 검증
         if (!story.id || !story.metadata || !story.nodes) {
@@ -363,6 +389,20 @@ function initManagerPage() {
           hideLoading();
           showToast('❌ 스토리 제목이 없습니다', 'error');
           return;
+        }
+
+        // 소유자 검증/보정
+        if (!story.metadata.ownerId) {
+          story.metadata.ownerId = currentUser.id;
+          showToast('ℹ️ 소유자 정보가 없어 내 계정으로 지정했습니다.', 'info');
+        } else if (story.metadata.ownerId !== currentUser.id) {
+          const confirmTakeOver = confirm('이 JSON은 다른 사용자 소유로 표시되어 있습니다. 내 스토리로 가져올까요?');
+          if (!confirmTakeOver) {
+            hideLoading();
+            showToast('🚫 가져오기를 취소했습니다.', 'error');
+            return;
+          }
+          story.metadata.ownerId = currentUser.id;
         }
 
         // localStorage에 저장

@@ -14,6 +14,7 @@ const SpreadsheetModule = {
         author: story.metadata.author || '익명',
         description: story.metadata.description || '',
         theme: story.metadata.theme,
+        ownerId: story.metadata.ownerId || (typeof UserModule !== 'undefined' ? UserModule.getId() : ''),
         storyData: JSON.stringify(story)
       };
 

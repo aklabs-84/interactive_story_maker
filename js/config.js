@@ -4,7 +4,7 @@
 
 const CONFIG = {
   // Google Apps Script 웹앱 URL (배포 후 받은 URL 입력)
-  GOOGLE_APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbyVo9ZfAkmqkg2uvca-WxknxWP0hAe8WlpSacoICEnRkX6bDPRYfWt-NoRSmxmgUMHpAw/exec',
+  GOOGLE_APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzzM9BzGn0ha5F2TakJRySl1Ak61y000qrgT3pXGv2JUXQ-Rc4WE1wS01S9PWOw3nGnxw/exec',
 
   // 스프레드시트 웹앱 URL (GOOGLE_APPS_SCRIPT_URL과 동일)
   get SPREADSHEET_WEB_APP_URL() {
@@ -25,7 +25,9 @@ const STORAGE_KEYS = {
   STORIES: 'interactive_stories',
   THEME: 'currentTheme',
   SOUND: 'soundEnabled',
-  MODE: 'displayMode' // 'light' 또는 'dark'
+  MODE: 'displayMode', // 'light' 또는 'dark'
+  USER_ID: 'storymaker_user_id',
+  USER_NAME: 'storymaker_user_name'
 };
 
 // ==========================================
@@ -73,4 +75,47 @@ const ModeModule = {
       icon.textContent = this.isDarkMode ? '🌙' : '☀️';
     });
   }
-}; 
+};
+
+// ==========================================
+// 사용자 식별 모듈 (로컬 전용)
+// ==========================================
+const UserModule = {
+  getId() {
+    let id = localStorage.getItem(STORAGE_KEYS.USER_ID);
+    if (!id) {
+      // crypto.randomUUID 지원 여부 확인 후 생성
+      id = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : 'user-' + Math.random().toString(36).slice(2, 10);
+      localStorage.setItem(STORAGE_KEYS.USER_ID, id);
+    }
+    return id;
+  },
+
+  getName() {
+    return localStorage.getItem(STORAGE_KEYS.USER_NAME) || '';
+  },
+
+  setName(name) {
+    if (name && name.trim()) {
+      localStorage.setItem(STORAGE_KEYS.USER_NAME, name.trim());
+    }
+  },
+
+  ensureProfile() {
+    const id = this.getId();
+    let name = this.getName();
+
+    if (!name) {
+      const input = prompt('내 스토리를 구분할 이름을 입력하세요 (예: 홍길동)', '');
+      if (input && input.trim()) {
+        name = input.trim();
+        localStorage.setItem(STORAGE_KEYS.USER_NAME, name);
+      } else {
+        name = '나';
+        localStorage.setItem(STORAGE_KEYS.USER_NAME, name);
+      }
+    }
+
+    return { id, name };
+  }
+};

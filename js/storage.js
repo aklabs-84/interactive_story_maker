@@ -23,6 +23,13 @@ const StorageModule = {
 
   // 스토리 저장
   saveStory(story, addToTop = true) {
+    // 스토리 소유자 지정: 없다면 현재 사용자 ID로 채우기
+    if (story && story.metadata) {
+      if (!story.metadata.ownerId && typeof UserModule !== 'undefined' && UserModule.getId) {
+        story.metadata.ownerId = UserModule.getId();
+      }
+    }
+
     const stories = this.getAllStories();
     const existingIndex = stories.findIndex(s => s.id === story.id);
     
