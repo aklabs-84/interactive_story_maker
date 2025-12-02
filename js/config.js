@@ -30,6 +30,9 @@ const STORAGE_KEYS = {
   USER_NAME: 'storymaker_user_name'
 };
 
+// 기본 테마 (최초 실행 시 적용)
+const DEFAULT_THEME = 'christmas';
+
 // ==========================================
 // 디스플레이 모드 모듈 (라이트/다크)
 // ==========================================

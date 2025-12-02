@@ -274,7 +274,7 @@ async function initPlayerPage() {
   ModeModule.init();
 
   // 테마 & 사운드 초기화
-  const savedTheme = localStorage.getItem(STORAGE_KEYS.THEME) || 'christmas';
+  const savedTheme = localStorage.getItem(STORAGE_KEYS.THEME) || DEFAULT_THEME;
   document.getElementById('themeSelector').value = savedTheme;
   ThemeModule.applyTheme(savedTheme);
   SoundModule.init();

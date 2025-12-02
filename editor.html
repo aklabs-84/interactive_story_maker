@@ -155,12 +155,20 @@
       <section class="card soft-card">
         <div class="section-head">
           <div class="title">🔀 선택지 작성</div>
+          <div class="flex gap-2">
+            <button id="expandAllBtn" class="px-3 py-1.5 bg-blue-500/20 hover:bg-blue-500/30 rounded-lg text-xs border border-blue-500/40 transition">▼ 모두 펼치기</button>
+            <button id="collapseAllBtn" class="px-3 py-1.5 bg-slate-500/20 hover:bg-slate-500/30 rounded-lg text-xs border border-slate-500/40 transition">▶ 모두 접기</button>
+          </div>
         </div>
-        <p class="help-text mb-4">A와 B 선택지를 작성하세요. 각 선택지마다 "➕ 하위 선택지 추가" 버튼을 누르면 그 선택지 아래에 새로운 A, B 선택지가 추가됩니다.</p>
+        <p class="help-text mb-4">A와 B 선택지를 작성하세요. 각 선택지마다 "➕ 하위 선택지 추가" 버튼을 누르면 그 선택지 아래에 새로운 A, B 선택지가 추가됩니다. 입력 필드를 클릭하면 자동으로 형제 선택지가 접힙니다.</p>
         <div id="choiceGroupsContainer" class="choice-stack"></div>
       </section>
 
       <section class="card action-bar border border-white/5">
+        <button id="loadJsonBtn" class="btn-primary px-6 py-3 bg-cyan-500 hover:bg-cyan-600 rounded-lg font-medium flex items-center gap-2 justify-center">
+          <span>📂</span>
+          <span>JSON 불러오기</span>
+        </button>
         <button id="saveStoryBtn" class="btn-primary px-6 py-3 bg-green-500 hover:bg-green-600 rounded-lg font-medium flex items-center gap-2 justify-center">
           <span>💾</span>
           <span>저장하기</span>
@@ -178,6 +186,9 @@
           <span>전체 지우기</span>
         </button>
       </section>
+
+      <!-- 숨겨진 파일 입력 -->
+      <input type="file" id="jsonFileInput" accept=".json" style="display: none;">
     </main>
 
     <!-- 푸터 -->
@@ -194,12 +205,25 @@
   <!-- 미리보기 모달 -->
   <div id="previewModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4" style="background: rgba(0,0,0,0.8);"></div>
 
+  <!-- 선택지 편집 패널 -->
+  <div id="editPanel" class="edit-panel">
+    <div class="edit-panel-header">
+      <h3 class="text-lg font-bold" id="editPanelTitle">선택지 편집</h3>
+      <button id="closePanelBtn" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center transition">✕</button>
+    </div>
+    <div id="editPanelContent" class="edit-panel-content">
+      <!-- 동적으로 채워질 내용 -->
+    </div>
+  </div>
+  <div id="editPanelOverlay" class="edit-panel-overlay"></div>
+
   <script src="js/config.js"></script>
   <script src="js/theme.js"></script>
   <script src="js/sound.js"></script>
   <script src="js/utils.js"></script>
   <script src="js/storage.js"></script>
   <script src="js/spreadsheet.js"></script>
+  <script src="js/json-converter.js"></script>
   <script src="js/editor.js"></script>
 </body>
 </html>

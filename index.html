@@ -109,7 +109,7 @@
     ModeModule.init();
 
     // 테마 초기화
-    const savedTheme = localStorage.getItem('currentTheme') || 'christmas';
+    const savedTheme = localStorage.getItem(STORAGE_KEYS.THEME) || DEFAULT_THEME;
     ThemeModule.applyTheme(savedTheme);
 
     // 모드 토글

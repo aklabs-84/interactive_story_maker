@@ -1,0 +1,281 @@
+{
+  "nodes": [
+    {
+      "id": "S1",
+      "title": "시작",
+      "content": "스토리 시작 지점 (카페)"
+    },
+    {
+      "id": "C1A",
+      "title": "1단계 A",
+      "content": "1단계 선택지 1 결과"
+    },
+    {
+      "id": "C1B",
+      "title": "1단계 B",
+      "content": "1단계 선택지 2 결과"
+    },
+    {
+      "id": "C2AA",
+      "title": "2단계 AA",
+      "content": "2단계 분기 C1A -> 선택지 1"
+    },
+    {
+      "id": "C2AB",
+      "title": "2단계 AB",
+      "content": "2단계 분기 C1A -> 선택지 2"
+    },
+    {
+      "id": "C2BA",
+      "title": "2단계 BA",
+      "content": "2단계 분기 C1B -> 선택지 1"
+    },
+    {
+      "id": "C2BB",
+      "title": "2단계 BB",
+      "content": "2단계 분기 C1B -> 선택지 2"
+    },
+    {
+      "id": "C3AAA",
+      "title": "3단계 AAA",
+      "content": "3단계 분기 C2AA -> 선택지 1"
+    },
+    {
+      "id": "C3AAB",
+      "title": "3단계 AAB",
+      "content": "3단계 분기 C2AA -> 선택지 2"
+    },
+    {
+      "id": "C3ABA",
+      "title": "3단계 ABA",
+      "content": "3단계 분기 C2AB -> 선택지 1"
+    },
+    {
+      "id": "C3ABB",
+      "title": "3단계 ABB",
+      "content": "3단계 분기 C2AB -> 선택지 2"
+    },
+    {
+      "id": "C3BAA",
+      "title": "3단계 BAA",
+      "content": "3단계 분기 C2BA -> 선택지 1"
+    },
+    {
+      "id": "C3BAB",
+      "title": "3단계 BAB",
+      "content": "3단계 분기 C2BA -> 선택지 2"
+    },
+    {
+      "id": "C3BBA",
+      "title": "3단계 BBA",
+      "content": "3단계 분기 C2BB -> 선택지 1"
+    },
+    {
+      "id": "C3BBB",
+      "title": "3단계 BBB",
+      "content": "3단계 분기 C2BB -> 선택지 2"
+    },
+    {
+      "id": "E_A",
+      "title": "엔딩 A: 기억 소거",
+      "content": "최종 결말: 기억 소거와 평행선"
+    },
+    {
+      "id": "E_B",
+      "title": "엔딩 B: 영원한 루프",
+      "content": "최종 결말: 시간선 폭발과 영원한 루프"
+    },
+    {
+      "id": "E_C",
+      "title": "엔딩 C: 쿠키 저주",
+      "content": "최종 결말: 우주 생강쿠키 춤의 저주"
+    },
+    {
+      "id": "E_D",
+      "title": "엔딩 D: 현실의 공허",
+      "content": "최종 결말: 현실의 공허와 고독"
+    }
+  ],
+  "links": [
+    {
+      "id": "L1A",
+      "source": "S1",
+      "target": "C1A",
+      "label": "1단계 선택지 1"
+    },
+    {
+      "id": "L1B",
+      "source": "S1",
+      "target": "C1B",
+      "label": "1단계 선택지 2"
+    },
+    {
+      "id": "L2AA",
+      "source": "C1A",
+      "target": "C2AA",
+      "label": "2단계 선택지 1"
+    },
+    {
+      "id": "L2AB",
+      "source": "C1A",
+      "target": "C2AB",
+      "label": "2단계 선택지 2"
+    },
+    {
+      "id": "L2BA",
+      "source": "C1B",
+      "target": "C2BA",
+      "label": "2단계 선택지 1"
+    },
+    {
+      "id": "L2BB",
+      "source": "C1B",
+      "target": "C2BB",
+      "label": "2단계 선택지 2"
+    },
+    {
+      "id": "L3AAA",
+      "source": "C2AA",
+      "target": "C3AAA",
+      "label": "3단계 선택지 1"
+    },
+    {
+      "id": "L3AAB",
+      "source": "C2AA",
+      "target": "C3AAB",
+      "label": "3단계 선택지 2"
+    },
+    {
+      "id": "L3ABA",
+      "source": "C2AB",
+      "target": "C3ABA",
+      "label": "3단계 선택지 1"
+    },
+    {
+      "id": "L3ABB",
+      "source": "C2AB",
+      "target": "C3ABB",
+      "label": "3단계 선택지 2"
+    },
+    {
+      "id": "L3BAA",
+      "source": "C2BA",
+      "target": "C3BAA",
+      "label": "3단계 선택지 1"
+    },
+    {
+      "id": "L3BAB",
+      "source": "C2BA",
+      "target": "C3BAB",
+      "label": "3단계 선택지 2"
+    },
+    {
+      "id": "L3BBA",
+      "source": "C2BB",
+      "target": "C3BBA",
+      "label": "3단계 선택지 1"
+    },
+    {
+      "id": "L3BBB",
+      "source": "C2BB",
+      "target": "C3BBB",
+      "label": "3단계 선택지 2"
+    },
+    {
+      "id": "L4AAAA",
+      "source": "C3AAA",
+      "target": "E_A",
+      "label": "4단계 선택지 1"
+    },
+    {
+      "id": "L4AAAB",
+      "source": "C3AAA",
+      "target": "E_B",
+      "label": "4단계 선택지 2"
+    },
+    {
+      "id": "L4AABA",
+      "source": "C3AAB",
+      "target": "E_C",
+      "label": "4단계 선택지 1"
+    },
+    {
+      "id": "L4AABB",
+      "source": "C3AAB",
+      "target": "E_D",
+      "label": "4단계 선택지 2"
+    },
+    {
+      "id": "L4ABAA",
+      "source": "C3ABA",
+      "target": "E_B",
+      "label": "4단계 선택지 1"
+    },
+    {
+      "id": "L4ABAB",
+      "source": "C3ABA",
+      "target": "E_A",
+      "label": "4단계 선택지 2"
+    },
+    {
+      "id": "L4ABBA",
+      "source": "C3ABB",
+      "target": "E_D",
+      "label": "4단계 선택지 1"
+    },
+    {
+      "id": "L4ABBB",
+      "source": "C3ABB",
+      "target": "E_C",
+      "label": "4단계 선택지 2"
+    },
+    {
+      "id": "L4BAAA",
+      "source": "C3BAA",
+      "target": "E_C",
+      "label": "4단계 선택지 1"
+    },
+    {
+      "id": "L4BAAB",
+      "source": "C3BAA",
+      "target": "E_D",
+      "label": "4단계 선택지 2"
+    },
+    {
+      "id": "L4BABA",
+      "source": "C3BAB",
+      "target": "E_A",
+      "label": "4단계 선택지 1"
+    },
+    {
+      "id": "L4BABB",
+      "source": "C3BAB",
+      "target": "E_B",
+      "label": "4단계 선택지 2"
+    },
+    {
+      "id": "L4BBAA",
+      "source": "C3BBA",
+      "target": "E_D",
+      "label": "4단계 선택지 1"
+    },
+    {
+      "id": "L4BBAB",
+      "source": "C3BBA",
+      "target": "E_C",
+      "label": "4단계 선택지 2"
+    },
+    {
+      "id": "L4BBBA",
+      "source": "C3BBB",
+      "target": "E_B",
+      "label": "4단계 선택지 1"
+    },
+    {
+      "id": "L4BBBB",
+      "source": "C3BBB",
+      "target": "E_A",
+      "label": "4단계 선택지 2"
+    }
+  ]
+}

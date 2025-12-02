@@ -5,25 +5,172 @@
 const EditorModule = {
   choiceCounter: 0,
   editingStoryId: null, // 편집 중인 스토리 ID 저장
+  currentEditingNode: null, // 현재 편집 중인 노드
+  compactMode: true, // 컴팩트 모드 활성화
 
   getNodeId(choiceEl) {
     return choiceEl.id;
+  },
+
+  // 형제 노드 접기 (같은 부모의 다른 자식들)
+  collapseSiblings(choiceDiv) {
+    const parentId = choiceDiv.dataset.parentId;
+    if (!parentId) return;
+
+    // 같은 부모를 가진 모든 형제 노드 찾기
+    const siblings = document.querySelectorAll(`.choice-node[data-parent-id="${parentId}"]`);
+
+    siblings.forEach(sibling => {
+      if (sibling !== choiceDiv) {
+        // 형제 노드 접기
+        sibling.classList.add('collapsed');
+        const icon = sibling.querySelector('.collapse-icon');
+        const btn = sibling.querySelector('.collapse-toggle-btn');
+        if (icon) icon.textContent = '▶';
+        if (btn) btn.classList.add('collapsed');
+      }
+    });
+  },
+
+  // 모든 선택지 펼치기/접기
+  toggleAllChoices(expand) {
+    const allChoices = document.querySelectorAll('.choice-node');
+
+    allChoices.forEach(choice => {
+      const icon = choice.querySelector('.collapse-icon');
+      const btn = choice.querySelector('.collapse-toggle-btn');
+
+      if (expand) {
+        // 펼치기
+        choice.classList.remove('collapsed');
+        if (icon) icon.textContent = '▼';
+        if (btn) btn.classList.remove('collapsed');
+      } else {
+        // 접기
+        choice.classList.add('collapsed');
+        if (icon) icon.textContent = '▶';
+        if (btn) btn.classList.add('collapsed');
+      }
+    });
+  },
+
+  // 경로 표시 생성 (예: 시작 → A → B)
+  generateBreadcrumb(parentId, currentLetter) {
+    const path = ['시작'];
+
+    // 부모 노드를 따라 올라가며 경로 구성
+    let current = parentId;
+    const letters = [];
+
+    while (current && current !== 'root') {
+      const parentEl = document.getElementById(current);
+      if (parentEl) {
+        const letter = parentEl.dataset.letter?.toUpperCase() || '';
+        if (letter) {
+          letters.unshift(letter);
+        }
+        current = parentEl.dataset.parentId;
+      } else {
+        break;
+      }
+    }
+
+    // 경로에 문자들 추가
+    letters.forEach(letter => path.push(letter));
+    path.push(currentLetter);
+
+    // HTML 생성
+    const breadcrumbItems = path.map((item, index) => {
+      const isLast = index === path.length - 1;
+      return `
+        <span class="choice-breadcrumb-item">
+          <span>${item}</span>
+        </span>
+        ${!isLast ? '<span class="choice-breadcrumb-separator">→</span>' : ''}
+      `;
+    }).join('');
+
+    return `
+      <div class="choice-breadcrumb">
+        ${breadcrumbItems}
+      </div>
+    `;
   },
 
   addRootChoices() {
     const container = document.getElementById('choiceGroupsContainer');
     container.innerHTML = '';
 
-    const wrapper = document.createElement('div');
-    wrapper.className = 'space-y-4';
+    if (this.compactMode) {
+      // 컴팩트 모드: 간단한 버튼형 트리 뷰
+      const wrapper = document.createElement('div');
+      wrapper.className = 'choice-tree-level root';
+      wrapper.id = 'tree-root';
 
-    const choiceA = this.createChoice('root', 'a', 0);
-    const choiceB = this.createChoice('root', 'b', 0);
+      const choiceA = this.createCompactChoice('root', 'a', 0);
+      const choiceB = this.createCompactChoice('root', 'b', 0);
 
-    wrapper.appendChild(choiceA);
-    wrapper.appendChild(choiceB);
+      wrapper.appendChild(choiceA);
+      wrapper.appendChild(choiceB);
 
-    container.appendChild(wrapper);
+      container.appendChild(wrapper);
+    } else {
+      // 기존 확장 모드
+      const wrapper = document.createElement('div');
+      wrapper.className = 'space-y-4';
+
+      const choiceA = this.createChoice('root', 'a', 0);
+      const choiceB = this.createChoice('root', 'b', 0);
+
+      wrapper.appendChild(choiceA);
+      wrapper.appendChild(choiceB);
+
+      container.appendChild(wrapper);
+    }
+  },
+
+  // 컴팩트 선택지 생성 (간단한 버튼형)
+  createCompactChoice(parentId, letter, level) {
+    const choiceId = `choice-${Date.now()}-${this.choiceCounter++}-${letter}`;
+
+    const container = document.createElement('div');
+    container.className = 'choice-tree-container';
+
+    const choiceBtn = document.createElement('button');
+    choiceBtn.id = choiceId;
+    choiceBtn.className = 'choice-tree-item';
+    choiceBtn.dataset.parentId = parentId;
+    choiceBtn.dataset.letter = letter;
+    choiceBtn.dataset.level = level;
+    choiceBtn.dataset.label = '';
+    choiceBtn.dataset.story = '';
+    choiceBtn.dataset.image = '';
+    choiceBtn.dataset.nextType = '';
+
+    const emoji = letter === 'a' ? '🅰️' : '🅱️';
+    const letterUpper = letter.toUpperCase();
+
+    choiceBtn.innerHTML = `
+      <span class="choice-tree-icon">${emoji}</span>
+      <span class="choice-tree-label">${letterUpper} - (입력 필요)</span>
+      <span class="choice-tree-badge">+</span>
+    `;
+
+    // 클릭 시 편집 패널 열기
+    choiceBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.openEditPanel(choiceBtn);
+    });
+
+    // 하위 선택지 컨테이너
+    const subContainer = document.createElement('div');
+    subContainer.className = 'choice-tree-level';
+    subContainer.id = `${choiceId}-sub`;
+
+    container.appendChild(choiceBtn);
+    container.appendChild(subContainer);
+
+    return container;
   },
 
   createChoice(parentId, letter, level) {
@@ -40,10 +187,17 @@ const EditorModule = {
     const letterUpper = letter.toUpperCase();
     const emoji = letter === 'a' ? '🅰️' : '🅱️';
 
+    // 경로 표시 생성
+    const breadcrumb = this.generateBreadcrumb(parentId, letterUpper);
+
     choiceDiv.innerHTML = `
       <div class="card soft-card" style="margin-left: ${indent}rem;">
-        <div class="flex items-center justify-between mb-3">
-          <div class="flex items-center gap-2">
+        ${level > 0 ? breadcrumb : ''}
+        <div class="choice-header">
+          <div class="choice-header-left">
+            <button class="collapse-toggle-btn" title="하위 선택지 접기/펼치기">
+              <span class="collapse-icon">▼</span>
+            </button>
             <span class="text-2xl">${emoji}</span>
             <h4 class="font-semibold text-cyan-300">선택지 ${letterUpper}</h4>
             ${level > 0 ? `<span class="pill text-xs">레벨 ${level + 1}</span>` : ''}
@@ -128,6 +282,46 @@ const EditorModule = {
     const deleteBtn = choiceDiv.querySelector('.delete-choice-btn');
     const endingContainer = choiceDiv.querySelector('.ending-container');
     const subContainer = choiceDiv.querySelector('.subchoices-container');
+    const collapseBtn = choiceDiv.querySelector('.collapse-toggle-btn');
+    const collapseIcon = choiceDiv.querySelector('.collapse-icon');
+
+    // 접기/펼치기 버튼
+    if (collapseBtn) {
+      collapseBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        SoundModule.playButtonClick();
+
+        const isCollapsed = choiceDiv.classList.contains('collapsed');
+
+        if (isCollapsed) {
+          // 펼치기
+          choiceDiv.classList.remove('collapsed');
+          collapseIcon.textContent = '▼';
+          collapseBtn.classList.remove('collapsed');
+          collapseBtn.title = '하위 선택지 접기';
+        } else {
+          // 접기
+          choiceDiv.classList.add('collapsed');
+          collapseIcon.textContent = '▶';
+          collapseBtn.classList.add('collapsed');
+          collapseBtn.title = '하위 선택지 펼치기';
+        }
+
+        // 하위 항목 수 업데이트
+        this.updateSubchoiceCount(choiceDiv);
+      });
+    }
+
+    // 초기 하위 항목 수 표시
+    this.updateSubchoiceCount(choiceDiv);
+
+    // 입력 필드에 포커스할 때 형제 노드 자동 접기
+    const inputs = choiceDiv.querySelectorAll(':scope > .card > .space-y-3 input, :scope > .card > .space-y-3 textarea');
+    inputs.forEach(input => {
+      input.addEventListener('focus', () => {
+        this.collapseSiblings(choiceDiv);
+      });
+    });
 
     // 선택지 이미지 업로드 버튼
     const uploadBtn = choiceDiv.querySelector('.upload-choice-image');
@@ -265,6 +459,11 @@ const EditorModule = {
       addBtn.textContent = '✅ 하위 선택지 추가됨';
       addBtn.disabled = true;
 
+      // 현재 노드 펼치기 (하위 선택지를 보여주기 위해)
+      choiceDiv.classList.remove('collapsed');
+      if (collapseIcon) collapseIcon.textContent = '▼';
+      if (collapseBtn) collapseBtn.classList.remove('collapsed');
+
       showToast('➕ 하위 선택지가 추가되었습니다');
 
       setTimeout(() => {
@@ -328,17 +527,29 @@ const EditorModule = {
       return false;
     }
 
-    const rootChoices = document.querySelectorAll('.choice-node[data-parent-id="root"]');
+    const rootChoices = this.compactMode
+      ? document.querySelectorAll('.choice-tree-item[data-parent-id="root"]')
+      : document.querySelectorAll('.choice-node[data-parent-id="root"]');
+
     if (rootChoices.length === 0) {
       showToast('❌ 최소 1개의 선택지가 필요합니다', 'error');
       return false;
     }
 
-    for (const choice of rootChoices) {
-      if (!choice.querySelector('.choice-label').value.trim()) {
-        showToast('❌ 모든 선택지에 텍스트를 입력해주세요', 'error');
-        choice.querySelector('.choice-label').focus();
-        return false;
+    if (this.compactMode) {
+      for (const choice of rootChoices) {
+        if (!(choice.dataset.label || '').trim()) {
+          showToast('❌ 모든 선택지에 텍스트를 입력해주세요', 'error');
+          return false;
+        }
+      }
+    } else {
+      for (const choice of rootChoices) {
+        if (!choice.querySelector('.choice-label').value.trim()) {
+          showToast('❌ 모든 선택지에 텍스트를 입력해주세요', 'error');
+          choice.querySelector('.choice-label').focus();
+          return false;
+        }
       }
     }
 
@@ -376,17 +587,31 @@ const EditorModule = {
     };
 
     // 모든 선택지를 재귀적으로 처리
-    const rootChoices = document.querySelectorAll('.choice-node[data-parent-id="root"]');
-    rootChoices.forEach(choiceEl => {
-      const choiceData = this.buildChoiceNode(choiceEl, story);
-      if (choiceData) {
-        story.nodes['start'].choices.push({
-          label: choiceData.label,
-          emoji: choiceData.emoji,
-          nextId: choiceData.nodeId
-        });
-      }
-    });
+    if (this.compactMode) {
+      const rootChoices = document.querySelectorAll('.choice-tree-item[data-parent-id="root"]');
+      rootChoices.forEach(choiceBtn => {
+        const choiceData = this.buildCompactChoiceNode(choiceBtn, story);
+        if (choiceData) {
+          story.nodes['start'].choices.push({
+            label: choiceData.label,
+            emoji: choiceData.emoji,
+            nextId: choiceData.nodeId
+          });
+        }
+      });
+    } else {
+      const rootChoices = document.querySelectorAll('.choice-node[data-parent-id="root"]');
+      rootChoices.forEach(choiceEl => {
+        const choiceData = this.buildChoiceNode(choiceEl, story);
+        if (choiceData) {
+          story.nodes['start'].choices.push({
+            label: choiceData.label,
+            emoji: choiceData.emoji,
+            nextId: choiceData.nodeId
+          });
+        }
+      });
+    }
 
     return story;
   },
@@ -468,7 +693,81 @@ const EditorModule = {
     return { nodeId, label, emoji };
   },
 
-  loadStoryToEditor(story) {
+  buildCompactChoiceNode(choiceBtn, story) {
+    const nodeId = choiceBtn.id;
+    const label = (choiceBtn.dataset.label || '').trim();
+    const storyText = (choiceBtn.dataset.story || '').trim();
+    const imageUrl = (choiceBtn.dataset.image || '').trim();
+    const nextType = choiceBtn.dataset.nextType || '';
+    const letter = choiceBtn.dataset.letter;
+    const emoji = letter === 'a' ? '⭐' : '💫';
+
+    if (!label) return null;
+
+    if (nextType === 'ending') {
+      story.nodes[nodeId] = {
+        id: nodeId,
+        type: 'ending',
+        emoji: emoji,
+        text: storyText || '이야기가 끝났습니다.',
+        image: imageUrl || '',
+        ending: {
+          title: (choiceBtn.dataset.endingTitle || '엔딩').trim(),
+          message: (choiceBtn.dataset.endingMessage || '').trim(),
+          type: choiceBtn.dataset.endingType || 'neutral',
+          image: ''
+        }
+      };
+    } else {
+      story.nodes[nodeId] = {
+        id: nodeId,
+        type: 'story',
+        emoji: emoji,
+        text: storyText || '이야기가 계속됩니다...',
+        image: imageUrl || '',
+        choices: []
+      };
+
+      const subContainer = document.getElementById(`${choiceBtn.id}-sub`);
+      const subChoices = subContainer?.querySelectorAll(':scope > .choice-tree-container > .choice-tree-item') || [];
+
+      if (subChoices.length > 0) {
+        subChoices.forEach(subChoice => {
+          const subData = this.buildCompactChoiceNode(subChoice, story);
+          if (subData) {
+            story.nodes[nodeId].choices.push({
+              label: subData.label,
+              emoji: subData.emoji,
+              nextId: subData.nodeId
+            });
+          }
+        });
+      } else {
+        const endingId = `ending-default-${nodeId}`;
+        story.nodes[endingId] = {
+          id: endingId,
+          type: 'ending',
+          emoji: '🏁',
+          text: '이야기가 끝났습니다.',
+          ending: {
+            title: '이야기 끝',
+            message: '다른 선택을 해보세요!',
+            type: 'neutral'
+          }
+        };
+        story.nodes[nodeId].choices.push({
+          label: '다음',
+          emoji: '➡️',
+          nextId: endingId
+        });
+      }
+    }
+
+    return { nodeId, label, emoji };
+  },
+
+  loadStoryToEditor(story, options = {}) {
+    const { preserveTheme = false } = options;
     this.clearEditor(true);
 
     // 편집 중인 스토리 ID 저장
@@ -505,7 +804,7 @@ const EditorModule = {
       }
     }
 
-    if (story.metadata.theme) {
+    if (story.metadata.theme && !preserveTheme) {
       ThemeModule.applyTheme(story.metadata.theme);
       document.getElementById('themeSelector').value = story.metadata.theme;
     }
@@ -515,17 +814,437 @@ const EditorModule = {
 
     setTimeout(() => {
       if (startNode?.choices?.length > 0) {
-        const rootChoices = document.querySelectorAll('.choice-node[data-parent-id="root"]');
-        startNode.choices.forEach((choice, index) => {
-          const choiceEl = rootChoices[index];
-          if (choiceEl) {
-            this.loadChoiceData(choiceEl, choice, story);
-          }
+        if (this.compactMode) {
+          // 컴팩트 모드: 트리 버튼 방식으로 로드
+          const rootChoices = document.querySelectorAll('.choice-tree-item[data-parent-id="root"]');
+          startNode.choices.forEach((choice, index) => {
+            const choiceBtn = rootChoices[index];
+            if (choiceBtn) {
+              this.loadCompactChoiceData(choiceBtn, choice, story);
+            }
+          });
+        } else {
+          // 기존 확장 모드
+          const rootChoices = document.querySelectorAll('.choice-node[data-parent-id="root"]');
+          startNode.choices.forEach((choice, index) => {
+            const choiceEl = rootChoices[index];
+            if (choiceEl) {
+              this.loadChoiceData(choiceEl, choice, story);
+            }
+          });
+
+          // 모든 선택지를 접은 상태로 시작
+          setTimeout(() => {
+            this.collapseAllExceptRoot();
+          }, 200);
+        }
+      }
+
+      showToast('📂 스토리를 불러왔습니다.', 'success');
+    }, 100);
+  },
+
+  // 컴팩트 모드로 선택지 데이터 로드
+  loadCompactChoiceData(choiceBtn, choiceData, story) {
+    const nextNode = story.nodes[choiceData.nextId];
+    if (!nextNode) return;
+
+    // 데이터 저장
+    choiceBtn.dataset.label = choiceData.label || '';
+    choiceBtn.dataset.story = nextNode.text || '';
+    choiceBtn.dataset.image = nextNode.image || '';
+
+    const emoji = choiceBtn.dataset.letter === 'a' ? '🅰️' : '🅱️';
+    const letterUpper = choiceBtn.dataset.letter.toUpperCase();
+
+    if (nextNode.type === 'ending') {
+      // 엔딩 노드
+      choiceBtn.dataset.nextType = 'ending';
+      choiceBtn.dataset.endingTitle = nextNode.ending?.title || '';
+      choiceBtn.dataset.endingMessage = nextNode.ending?.message || '';
+      choiceBtn.dataset.endingType = nextNode.ending?.type || 'neutral';
+
+      choiceBtn.innerHTML = `
+        <span class="choice-tree-icon">${emoji}</span>
+        <span class="choice-tree-label">${letterUpper} - ${choiceData.label}</span>
+        <span class="choice-tree-badge">🏁</span>
+      `;
+      choiceBtn.classList.add('has-content', 'is-ending');
+    } else if (nextNode.choices && nextNode.choices.length > 0) {
+      // 하위 선택지가 있는 노드
+      choiceBtn.dataset.nextType = 'continue';
+
+      choiceBtn.innerHTML = `
+        <span class="choice-tree-icon">${emoji}</span>
+        <span class="choice-tree-label">${letterUpper} - ${choiceData.label}</span>
+        <span class="choice-tree-badge">${nextNode.choices.length}개</span>
+      `;
+      choiceBtn.classList.add('has-content');
+
+      // 하위 선택지 추가
+      const subContainer = document.getElementById(`${choiceBtn.id}-sub`);
+      if (subContainer && nextNode.choices.length > 0) {
+        nextNode.choices.forEach((subChoice, idx) => {
+          const letter = idx === 0 ? 'a' : 'b';
+          const level = parseInt(choiceBtn.dataset.level);
+          const compactChoice = this.createCompactChoice(choiceBtn.id, letter, level + 1);
+
+          subContainer.appendChild(compactChoice);
+
+          // 재귀적으로 하위 선택지 로드
+          setTimeout(() => {
+            const subBtn = compactChoice.querySelector('.choice-tree-item');
+            if (subBtn) {
+              this.loadCompactChoiceData(subBtn, subChoice, story);
+            }
+          }, 50);
         });
       }
-    }, 100);
+    } else {
+      // 일반 노드 (하위 선택지 없음)
+      choiceBtn.innerHTML = `
+        <span class="choice-tree-icon">${emoji}</span>
+        <span class="choice-tree-label">${letterUpper} - ${choiceData.label}</span>
+        <span class="choice-tree-badge">+</span>
+      `;
+      choiceBtn.classList.add('has-content');
+    }
+  },
 
-    showToast('📂 스토리를 불러왔습니다');
+  // 루트 선택지만 펼치고 나머지는 모두 접기
+  collapseAllExceptRoot() {
+    const allChoices = document.querySelectorAll('.choice-node');
+
+    allChoices.forEach(choice => {
+      const level = parseInt(choice.dataset.level);
+      const icon = choice.querySelector('.collapse-icon');
+      const btn = choice.querySelector('.collapse-toggle-btn');
+
+      // 레벨 1 이상(하위 선택지)은 모두 접기
+      if (level > 0) {
+        choice.classList.add('collapsed');
+        if (icon) icon.textContent = '▶';
+        if (btn) btn.classList.add('collapsed');
+      }
+
+      // 하위 항목 수 표시
+      this.updateSubchoiceCount(choice);
+    });
+  },
+
+  // 편집 패널 열기
+  openEditPanel(choiceBtn) {
+    this.currentEditingNode = choiceBtn;
+    SoundModule.playButtonClick();
+
+    // 모든 선택지에서 active 클래스 제거
+    document.querySelectorAll('.choice-tree-item').forEach(btn => btn.classList.remove('active'));
+    choiceBtn.classList.add('active');
+
+    const panel = document.getElementById('editPanel');
+    const overlay = document.getElementById('editPanelOverlay');
+    const content = document.getElementById('editPanelContent');
+    const title = document.getElementById('editPanelTitle');
+
+    // 패널 제목 설정
+    const letter = choiceBtn.dataset.letter.toUpperCase();
+    const level = parseInt(choiceBtn.dataset.level);
+    title.textContent = `선택지 ${letter} 편집 (레벨 ${level + 1})`;
+
+    // 편집 폼 생성
+    const label = choiceBtn.dataset.label || '';
+    const story = choiceBtn.dataset.story || '';
+    const image = choiceBtn.dataset.image || '';
+    const nextType = choiceBtn.dataset.nextType || '';
+    const isEnding = nextType === 'ending';
+    const hasSubchoices = nextType === 'continue';
+
+    content.innerHTML = `
+      <div class="space-y-4">
+        <div class="input-group">
+          <label class="block text-sm font-medium mb-2">선택지 텍스트 <span class="text-red-400">*</span></label>
+          <input type="text" id="panel-label" value="${label}" placeholder="예: 숲으로 들어간다" maxlength="100" class="w-full">
+        </div>
+
+        <div class="input-group">
+          <label class="block text-sm font-medium mb-2">이야기 내용</label>
+          <textarea id="panel-story" placeholder="이 선택을 하면 어떤 일이 벌어질까요?" maxlength="500" class="w-full h-32 resize-none">${story}</textarea>
+        </div>
+
+        <div class="input-group">
+          <label class="block text-sm font-medium mb-2">이미지 (선택)</label>
+          <div class="flex gap-2">
+            <input type="file" id="panel-image-file" accept="image/*" class="flex-1">
+            <button type="button" id="panel-upload-image" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg text-sm font-medium">업로드</button>
+          </div>
+          <input type="hidden" id="panel-image" value="${image}">
+          <div id="panel-image-preview" class="mt-2">
+            ${image ? `<img src="${image}" class="w-32 h-32 object-cover rounded-lg border border-white/10">` : ''}
+          </div>
+        </div>
+
+        <div class="border-t border-white/10 pt-4 mt-4">
+          <label class="block text-sm font-medium mb-3">다음 단계 설정</label>
+          <div class="flex gap-2">
+            <button type="button" id="panel-add-subchoice" class="flex-1 px-4 py-2.5 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/40 rounded-lg text-sm font-medium transition ${hasSubchoices ? 'opacity-50 cursor-not-allowed' : ''}">
+              ➕ 하위 선택지 추가
+            </button>
+            <button type="button" id="panel-set-ending" class="flex-1 px-4 py-2.5 ${isEnding ? 'bg-purple-500/40' : 'bg-purple-500/20 hover:bg-purple-500/30'} border border-purple-500/40 rounded-lg text-sm font-medium transition">
+              🏁 ${isEnding ? '엔딩으로 설정됨' : '엔딩으로 설정'}
+            </button>
+          </div>
+        </div>
+
+        <div id="panel-ending-section" class="${isEnding ? '' : 'hidden'}">
+          <div class="p-4 bg-purple-500/10 rounded-lg border border-purple-500/30 space-y-3 mt-3">
+            <div>
+              <label class="block text-sm font-medium mb-2">엔딩 제목</label>
+              <input type="text" id="panel-ending-title" value="${choiceBtn.dataset.endingTitle || ''}" placeholder="예: 해피 엔딩" maxlength="50" class="w-full">
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">엔딩 메시지</label>
+              <textarea id="panel-ending-message" placeholder="마지막 메시지" maxlength="300" class="w-full h-20 resize-none">${choiceBtn.dataset.endingMessage || ''}</textarea>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">엔딩 타입</label>
+              <select id="panel-ending-type" class="w-full">
+                <option value="happy" ${choiceBtn.dataset.endingType === 'happy' ? 'selected' : ''}>😊 해피 엔딩</option>
+                <option value="sad" ${choiceBtn.dataset.endingType === 'sad' ? 'selected' : ''}>😢 새드 엔딩</option>
+                <option value="neutral" ${choiceBtn.dataset.endingType === 'neutral' ? 'selected' : ''}>😐 중립적 엔딩</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex gap-2 pt-4 border-t border-white/10">
+          <button type="button" id="panel-save" class="flex-1 px-4 py-3 bg-green-500 hover:bg-green-600 rounded-lg font-medium">💾 저장</button>
+          ${level > 0 ? '<button type="button" id="panel-delete" class="px-4 py-3 bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 rounded-lg font-medium">🗑️ 삭제</button>' : ''}
+        </div>
+      </div>
+    `;
+
+    // 이벤트 리스너 연결
+    this.attachPanelEventListeners(choiceBtn);
+
+    // 패널 열기
+    panel.classList.add('open');
+    overlay.classList.add('active');
+  },
+
+  // 편집 패널 닫기
+  closeEditPanel() {
+    const panel = document.getElementById('editPanel');
+    const overlay = document.getElementById('editPanelOverlay');
+
+    panel.classList.remove('open');
+    overlay.classList.remove('active');
+
+    if (this.currentEditingNode) {
+      this.currentEditingNode.classList.remove('active');
+      this.currentEditingNode = null;
+    }
+  },
+
+  // 패널 이벤트 리스너
+  attachPanelEventListeners(choiceBtn) {
+    // 저장 버튼
+    document.getElementById('panel-save')?.addEventListener('click', () => {
+      this.saveChoiceFromPanel(choiceBtn);
+    });
+
+    // 삭제 버튼
+    document.getElementById('panel-delete')?.addEventListener('click', () => {
+      if (confirm('이 선택지와 하위 선택지를 모두 삭제하시겠습니까?')) {
+        SoundModule.playButtonClick();
+        choiceBtn.parentElement.remove();
+        this.closeEditPanel();
+        showToast('🗑️ 선택지가 삭제되었습니다');
+      }
+    });
+
+    // 하위 선택지 추가
+    document.getElementById('panel-add-subchoice')?.addEventListener('click', () => {
+      if (choiceBtn.dataset.nextType === 'ending') {
+        showToast('❌ 엔딩으로 설정된 선택지에는 하위 선택지를 추가할 수 없습니다', 'error');
+        return;
+      }
+
+      if (choiceBtn.dataset.nextType === 'continue') {
+        showToast('ℹ️ 이미 하위 선택지가 있습니다', 'error');
+        return;
+      }
+
+      SoundModule.playButtonClick();
+      this.addSubchoices(choiceBtn);
+      this.closeEditPanel();
+      showToast('➕ 하위 선택지가 추가되었습니다');
+    });
+
+    // 엔딩 설정
+    document.getElementById('panel-set-ending')?.addEventListener('click', () => {
+      const isEnding = choiceBtn.dataset.nextType === 'ending';
+      const endingSection = document.getElementById('panel-ending-section');
+      const btn = document.getElementById('panel-set-ending');
+
+      if (isEnding) {
+        // 엔딩 취소
+        choiceBtn.dataset.nextType = '';
+        endingSection.classList.add('hidden');
+        btn.textContent = '🏁 엔딩으로 설정';
+        btn.classList.remove('bg-purple-500/40');
+        btn.classList.add('bg-purple-500/20', 'hover:bg-purple-500/30');
+        choiceBtn.classList.remove('is-ending');
+      } else {
+        // 엔딩 설정
+        choiceBtn.dataset.nextType = 'ending';
+        endingSection.classList.remove('hidden');
+        btn.textContent = '🏁 엔딩으로 설정됨';
+        btn.classList.add('bg-purple-500/40');
+        btn.classList.remove('bg-purple-500/20', 'hover:bg-purple-500/30');
+        choiceBtn.classList.add('is-ending');
+      }
+      SoundModule.playButtonClick();
+    });
+
+    // 이미지 업로드
+    document.getElementById('panel-upload-image')?.addEventListener('click', async () => {
+      const fileInput = document.getElementById('panel-image-file');
+      if (!fileInput.files || fileInput.files.length === 0) {
+        showToast('❌ 이미지를 선택해주세요', 'error');
+        return;
+      }
+
+      const file = fileInput.files[0];
+      if (file.size > 2 * 1024 * 1024) {
+        showToast('❌ 이미지 크기는 2MB 이하여야 합니다', 'error');
+        return;
+      }
+
+      try {
+        SoundModule.playButtonClick();
+        showLoading('이미지 처리 중...');
+
+        const compressedFile = await resizeAndCompressImage(file);
+        const imageBase64 = await uploadImageToBase64(compressedFile);
+
+        document.getElementById('panel-image').value = imageBase64;
+        document.getElementById('panel-image-preview').innerHTML = `
+          <img src="${imageBase64}" class="w-32 h-32 object-cover rounded-lg border border-white/10">
+        `;
+
+        showToast('✅ 이미지가 추가되었습니다', 'success');
+      } catch (err) {
+        showToast('❌ 이미지 업로드 실패: ' + err.message, 'error');
+      } finally {
+        hideLoading();
+      }
+    });
+  },
+
+  // 패널에서 선택지 저장
+  saveChoiceFromPanel(choiceBtn) {
+    const label = document.getElementById('panel-label').value.trim();
+
+    if (!label) {
+      showToast('❌ 선택지 텍스트를 입력해주세요', 'error');
+      return;
+    }
+
+    SoundModule.playButtonClick();
+
+    // 데이터 저장
+    choiceBtn.dataset.label = label;
+    choiceBtn.dataset.story = document.getElementById('panel-story').value.trim();
+    choiceBtn.dataset.image = document.getElementById('panel-image').value.trim();
+
+    // 엔딩 데이터 저장
+    if (choiceBtn.dataset.nextType === 'ending') {
+      choiceBtn.dataset.endingTitle = document.getElementById('panel-ending-title').value.trim();
+      choiceBtn.dataset.endingMessage = document.getElementById('panel-ending-message').value.trim();
+      choiceBtn.dataset.endingType = document.getElementById('panel-ending-type').value;
+    }
+
+    // 버튼 텍스트 업데이트
+    const emoji = choiceBtn.dataset.letter === 'a' ? '🅰️' : '🅱️';
+    const letterUpper = choiceBtn.dataset.letter.toUpperCase();
+    const hasSubchoices = choiceBtn.dataset.nextType === 'continue';
+    const isEnding = choiceBtn.dataset.nextType === 'ending';
+
+    let badge = '';
+    if (hasSubchoices) {
+      const subContainer = document.getElementById(`${choiceBtn.id}-sub`);
+      const childCount = subContainer?.querySelectorAll(':scope > .choice-tree-container').length || 0;
+      badge = `<span class="choice-tree-badge">${childCount}개</span>`;
+    } else if (isEnding) {
+      badge = '<span class="choice-tree-badge">🏁</span>';
+    } else {
+      badge = '<span class="choice-tree-badge">+</span>';
+    }
+
+    choiceBtn.innerHTML = `
+      <span class="choice-tree-icon">${emoji}</span>
+      <span class="choice-tree-label">${letterUpper} - ${label}</span>
+      ${badge}
+    `;
+
+    // 스타일 업데이트
+    choiceBtn.classList.add('has-content');
+
+    this.closeEditPanel();
+    showToast('✅ 저장되었습니다', 'success');
+  },
+
+  // 하위 선택지 추가
+  addSubchoices(choiceBtn) {
+    const level = parseInt(choiceBtn.dataset.level);
+    const subContainer = document.getElementById(`${choiceBtn.id}-sub`);
+
+    if (!subContainer) return;
+
+    const choiceA = this.createCompactChoice(choiceBtn.id, 'a', level + 1);
+    const choiceB = this.createCompactChoice(choiceBtn.id, 'b', level + 1);
+
+    subContainer.appendChild(choiceA);
+    subContainer.appendChild(choiceB);
+
+    choiceBtn.dataset.nextType = 'continue';
+
+    // 버튼 업데이트
+    const emoji = choiceBtn.dataset.letter === 'a' ? '🅰️' : '🅱️';
+    const letterUpper = choiceBtn.dataset.letter.toUpperCase();
+    const label = choiceBtn.dataset.label || `${letterUpper} - (입력 필요)`;
+
+    choiceBtn.innerHTML = `
+      <span class="choice-tree-icon">${emoji}</span>
+      <span class="choice-tree-label">${label}</span>
+      <span class="choice-tree-badge">2개</span>
+    `;
+  },
+
+  // 하위 선택지 개수 표시 업데이트
+  updateSubchoiceCount(choiceDiv) {
+    const subContainer = choiceDiv.querySelector('.subchoices-container');
+    const headerLeft = choiceDiv.querySelector('.choice-header-left');
+
+    if (!subContainer || !headerLeft) return;
+
+    // 기존 카운터 제거
+    const existingCounter = headerLeft.querySelector('.subchoice-counter');
+    if (existingCounter) {
+      existingCounter.remove();
+    }
+
+    // 직접 하위 선택지 수 계산
+    const directChildren = subContainer.querySelectorAll(':scope > .choice-node');
+    const childCount = directChildren.length;
+
+    // 하위 선택지가 있고 접혀있을 때만 표시
+    if (childCount > 0 && choiceDiv.classList.contains('collapsed')) {
+      const counter = document.createElement('span');
+      counter.className = 'subchoice-counter choice-collapse-indicator';
+      counter.textContent = `하위 ${childCount}개`;
+      headerLeft.appendChild(counter);
+    }
   },
 
   loadChoiceData(choiceEl, choiceData, story) {
@@ -677,6 +1396,30 @@ const EditorModule = {
         modal.classList.remove('flex');
       }
     });
+  },
+
+  // JSON 파일 불러오기
+  loadFromJsonFile(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+        try {
+          const fileContent = e.target.result;
+          const story = JsonConverterModule.parseJsonFile(fileContent);
+          this.loadStoryToEditor(story, { preserveTheme: true });
+          resolve(story);
+        } catch (error) {
+          reject(error);
+        }
+      };
+
+      reader.onerror = () => {
+        reject(new Error('파일을 읽을 수 없습니다.'));
+      };
+
+      reader.readAsText(file);
+    });
   }
 };
 
@@ -688,7 +1431,7 @@ function initEditorPage() {
   ModeModule.init();
 
   // 테마 & 사운드 초기화
-  const savedTheme = localStorage.getItem(STORAGE_KEYS.THEME) || 'christmas';
+  const savedTheme = localStorage.getItem(STORAGE_KEYS.THEME) || DEFAULT_THEME;
   document.getElementById('themeSelector').value = savedTheme;
   document.getElementById('themeSelectorMobile').value = savedTheme;
   ThemeModule.applyTheme(savedTheme);
@@ -806,6 +1549,60 @@ function initEditorPage() {
       SoundModule.playButtonClick();
       EditorModule.clearEditor();
       showToast('✅ 에디터가 초기화되었습니다');
+    }
+  });
+
+  // 모두 펼치기
+  document.getElementById('expandAllBtn')?.addEventListener('click', () => {
+    SoundModule.playButtonClick();
+    EditorModule.toggleAllChoices(true);
+    showToast('▼ 모든 선택지를 펼쳤습니다');
+  });
+
+  // 모두 접기
+  document.getElementById('collapseAllBtn')?.addEventListener('click', () => {
+    SoundModule.playButtonClick();
+    EditorModule.toggleAllChoices(false);
+    showToast('▶ 모든 선택지를 접었습니다');
+  });
+
+  // 편집 패널 닫기
+  document.getElementById('closePanelBtn')?.addEventListener('click', () => {
+    EditorModule.closeEditPanel();
+  });
+
+  document.getElementById('editPanelOverlay')?.addEventListener('click', () => {
+    EditorModule.closeEditPanel();
+  });
+
+  // JSON 파일 불러오기
+  document.getElementById('loadJsonBtn')?.addEventListener('click', () => {
+    document.getElementById('jsonFileInput').click();
+  });
+
+  document.getElementById('jsonFileInput')?.addEventListener('change', async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // 파일 확장자 확인
+    if (!file.name.endsWith('.json')) {
+      showToast('❌ JSON 파일만 업로드 가능합니다', 'error');
+      e.target.value = '';
+      return;
+    }
+
+    try {
+      SoundModule.playButtonClick();
+      showLoading('JSON 파일 변환 중...');
+
+      await EditorModule.loadFromJsonFile(file);
+
+      showToast('✅ JSON 파일을 불러왔습니다!', 'success');
+    } catch (error) {
+      showToast('❌ JSON 변환 실패: ' + error.message, 'error');
+    } finally {
+      hideLoading();
+      e.target.value = ''; // 입력 초기화
     }
   });
 
