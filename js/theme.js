@@ -4,6 +4,19 @@
 
 const ThemeModule = {
   themes: {
+    christmas: {
+      name: '크리스마스',
+      colors: {
+        bg1: '#1a1f2e',
+        bg2: '#1a1f2e',
+        primary: '#e11d48',
+        accent: '#22d3ee',
+        textPrimary: '#f0f4f8',
+        textSecondary: '#d1dae3',
+        textMuted: '#8b9aad'
+      },
+      animation: 'snow'
+    },
     space: {
       name: '우주',
       colors: {
@@ -52,25 +65,30 @@ const ThemeModule = {
     switch (animationType) {
       case 'snow': this.createSnow(layer); break;
       case 'stars': this.createStars(layer); break;
-      case 'sparkles': this.createSparkles(layer); break;
-      case 'waves': this.createWaves(layer); break;
-      case 'leaves': this.createLeaves(layer); break;
     }
   },
 
   createSnow(container) {
-    for (let i = 0; i < 60; i++) {
+    for (let i = 0; i < 80; i++) {
       const span = document.createElement('span');
-      const size = Math.random() * 5 + 2;
+      const size = Math.random() * 4 + 1.5;
+      const duration = Math.random() * 6 + 10; // 10~16s
+      const delay = Math.random() * 6;
+      const drift = Math.random() * 60 - 30;
       span.style.cssText = `
         position: absolute; top: -10px; left: ${Math.random() * 100}vw;
         width: ${size}px; height: ${size}px; background: rgba(255,255,255,0.9);
-        border-radius: 50%; filter: drop-shadow(0 0 6px rgba(255,255,255,0.6));
-        animation: fall ${Math.random() * 8 + 8}s linear ${Math.random() * 6}s infinite;
+        border-radius: 50%; filter: drop-shadow(0 0 6px rgba(255,255,255,0.5));
+        opacity: 0.85;
+        animation: fall ${duration}s linear ${delay}s infinite, drift ${duration}s ease-in-out ${delay}s infinite;
+        transform: translateX(0);
       `;
       container.appendChild(span);
     }
-    this.addAnimationStyle('snowAnimation', '@keyframes fall { to { transform: translateY(110vh) rotate(360deg); } }');
+    this.addAnimationStyle('snowAnimation', `
+      @keyframes fall { to { transform: translateY(110vh) rotate(360deg); } }
+      @keyframes drift { 0% { transform: translateX(0); } 50% { transform: translateX(${drift}px); } 100% { transform: translateX(0); } }
+    `);
   },
 
   createStars(container) {
@@ -90,52 +108,6 @@ const ThemeModule = {
       container.appendChild(span);
     }
     this.addAnimationStyle('starsAnimation', '@keyframes twinkle { 0%, 100% { opacity: 0.15; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.4); } }');
-  },
-
-  createSparkles(container) {
-    for (let i = 0; i < 40; i++) {
-      const span = document.createElement('span');
-      const size = Math.random() * 4 + 2;
-      span.style.cssText = `
-        position: absolute; top: ${Math.random() * 100}vh; left: ${Math.random() * 100}vw;
-        width: ${size}px; height: ${size}px; background: rgba(251, 191, 36, 0.8);
-        border-radius: 50%; box-shadow: 0 0 10px rgba(251, 191, 36, 0.6);
-        animation: sparkle ${Math.random() * 2 + 1}s ease-in-out ${Math.random() * 2}s infinite;
-      `;
-      container.appendChild(span);
-    }
-    this.addAnimationStyle('sparklesAnimation', '@keyframes sparkle { 0%, 100% { opacity: 0; transform: scale(0); } 50% { opacity: 1; transform: scale(1); } }');
-  },
-
-  createWaves(container) {
-    // 배경 그라디언트 제거 - 너무 눈에 띔
-    // container.style.background = 'linear-gradient(180deg, transparent 0%, rgba(34, 211, 238, 0.05) 100%)';
-
-    // 대신 미묘한 물결 애니메이션 추가
-    for (let i = 0; i < 3; i++) {
-      const wave = document.createElement('div');
-      wave.style.cssText = `
-        position: absolute; bottom: 0; left: 0; width: 200%; height: 100px;
-        background: linear-gradient(90deg, transparent, rgba(34, 211, 238, 0.03), transparent);
-        animation: wave ${6 + i * 2}s linear ${i * 2}s infinite;
-      `;
-      container.appendChild(wave);
-    }
-    this.addAnimationStyle('wavesAnimation', '@keyframes wave { 0% { transform: translateX(-50%); } 100% { transform: translateX(0%); } }');
-  },
-
-  createLeaves(container) {
-    for (let i = 0; i < 30; i++) {
-      const span = document.createElement('span');
-      span.textContent = '🍂';
-      span.style.cssText = `
-        position: absolute; top: -20px; left: ${Math.random() * 100}vw;
-        font-size: ${Math.random() * 8 + 4}px;
-        animation: fallLeaf ${Math.random() * 10 + 10}s linear ${Math.random() * 5}s infinite;
-      `;
-      container.appendChild(span);
-    }
-    this.addAnimationStyle('leavesAnimation', '@keyframes fallLeaf { to { transform: translateY(110vh) rotate(720deg) translateX(100px); } }');
   },
 
   addAnimationStyle(id, css) {
