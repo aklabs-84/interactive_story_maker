@@ -4,19 +4,6 @@
 
 const ThemeModule = {
   themes: {
-    christmas: {
-      name: '크리스마스',
-      colors: {
-        bg1: '#1a1f2e',
-        bg2: '#1a1f2e',
-        primary: '#e11d48',
-        accent: '#22d3ee',
-        textPrimary: '#f0f4f8',
-        textSecondary: '#d1dae3',
-        textMuted: '#8b9aad'
-      },
-      animation: 'snow'
-    },
     space: {
       name: '우주',
       colors: {
@@ -29,58 +16,6 @@ const ThemeModule = {
         textMuted: '#9080b8'
       },
       animation: 'stars'
-    },
-    fantasy: {
-      name: '판타지',
-      colors: {
-        bg1: '#0d1f0d',
-        bg2: '#0d1f0d',
-        primary: '#10b981',
-        accent: '#fbbf24',
-        textPrimary: '#e8f5e8',
-        textSecondary: '#c4e4c4',
-        textMuted: '#8db88d'
-      },
-      animation: 'sparkles'
-    },
-    school: {
-      name: '학교',
-      colors: {
-        bg1: '#1e293b',
-        bg2: '#1e293b',
-        primary: '#3b82f6',
-        accent: '#fbbf24',
-        textPrimary: '#f0f4f8',
-        textSecondary: '#cbd5e1',
-        textMuted: '#94a3b8'
-      },
-      animation: 'none'
-    },
-    summer: {
-      name: '여름',
-      colors: {
-        bg1: '#0c3a5a',
-        bg2: '#0c3a5a',
-        primary: '#f97316',
-        accent: '#fbbf24',
-        textPrimary: '#f0f9ff',
-        textSecondary: '#bae6fd',
-        textMuted: '#7dd3fc'
-      },
-      animation: 'waves'
-    },
-    autumn: {
-      name: '가을',
-      colors: {
-        bg1: '#3d1808',
-        bg2: '#3d1808',
-        primary: '#ea580c',
-        accent: '#fbbf24',
-        textPrimary: '#fef3e8',
-        textSecondary: '#fed7aa',
-        textMuted: '#fb923c'
-      },
-      animation: 'leaves'
     }
   },
 
@@ -139,17 +74,22 @@ const ThemeModule = {
   },
 
   createStars(container) {
-    for (let i = 0; i < 100; i++) {
+    // 별 반짝임을 느리게, 부드럽게
+    for (let i = 0; i < 120; i++) {
       const span = document.createElement('span');
-      const size = Math.random() * 3 + 1;
+      const size = Math.random() * 2 + 1;
+      const duration = Math.random() * 6 + 6; // 6~12s
+      const delay = Math.random() * 5;
       span.style.cssText = `
         position: absolute; top: ${Math.random() * 100}vh; left: ${Math.random() * 100}vw;
         width: ${size}px; height: ${size}px; background: white; border-radius: 50%;
-        animation: twinkle ${Math.random() * 3 + 2}s ease-in-out ${Math.random() * 3}s infinite;
+        opacity: 0.2;
+        animation: twinkle ${duration}s ease-in-out ${delay}s infinite;
+        box-shadow: 0 0 ${Math.random() * 8 + 4}px rgba(255,255,255,0.4);
       `;
       container.appendChild(span);
     }
-    this.addAnimationStyle('starsAnimation', '@keyframes twinkle { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }');
+    this.addAnimationStyle('starsAnimation', '@keyframes twinkle { 0%, 100% { opacity: 0.15; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.4); } }');
   },
 
   createSparkles(container) {
