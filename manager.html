@@ -34,10 +34,9 @@
           <div class="flex items-center gap-2 md:gap-3">
             <!-- 데스크톱 네비게이션 -->
             <nav class="hidden lg:flex items-center gap-1 flex-shrink-0">
-              <a href="editor.html" class="nav-link">✏️ 만들기</a>
-              <a href="player.html" class="nav-link">▶️ 체험</a>
-              <a href="manager.html" class="nav-link active">💾 내 스토리</a>
-              <a href="https://gemini.google.com/gem/1nW0ghsBuhUtO_O2cJo2ORGtoMJVB-t5_?usp=sharing" target="_blank" rel="noopener noreferrer" class="nav-link">🧭 스토리 설계 GEM</a>
+              <a href="index.html" class="nav-link">🏠 홈</a>
+              <button type="button" class="nav-link nav-toggle" data-menu-toggle="build">✏️ 만들기 ▾</button>
+              <button type="button" class="nav-link nav-toggle" data-menu-toggle="tools">🛠️ 도구 ▾</button>
             </nav>
 
             <!-- 테마 선택 -->
@@ -64,10 +63,9 @@
 
         <!-- 모바일/태블릿 네비게이션 -->
         <nav class="lg:hidden flex items-center gap-2 pb-3 overflow-x-auto">
-          <a href="editor.html" class="nav-link">✏️ 만들기</a>
-          <a href="player.html" class="nav-link">▶️ 체험</a>
-          <a href="manager.html" class="nav-link active">💾 내 스토리</a>
-          <a href="https://gemini.google.com/gem/1nW0ghsBuhUtO_O2cJo2ORGtoMJVB-t5_?usp=sharing" target="_blank" rel="noopener noreferrer" class="nav-link">🧭 설계 GEM</a>
+          <a href="index.html" class="nav-link">🏠 홈</a>
+          <button type="button" class="nav-link nav-toggle" data-menu-toggle="build">✏️ 만들기 ▾</button>
+          <button type="button" class="nav-link nav-toggle" data-menu-toggle="tools">🛠️ 도구 ▾</button>
           <select id="themeSelectorMobile" class="theme-select-mobile sm:hidden text-sm px-2 py-1 bg-white/5 border border-white/10 rounded-lg cursor-pointer flex-shrink-0">
             <option value="christmas">🎄</option>
             <option value="space">🚀</option>
@@ -77,6 +75,7 @@
             <option value="autumn">🍂</option>
           </select>
         </nav>
+        <div id="submenuBar" class="submenu-bar"></div>
       </div>
     </header>
 
@@ -170,5 +169,64 @@
   <script src="js/storage.js"></script>
   <script src="js/spreadsheet.js"></script>
   <script src="js/manager.js"></script>
+  <script>
+    // 상단 서브메뉴 토글
+    (function initSubmenu(activePage = 'manager') {
+      const submenuBar = document.getElementById('submenuBar');
+      const toggles = document.querySelectorAll('[data-menu-toggle]');
+      let openKey = null;
+
+      const menus = {
+        build: [
+          { href: 'editor.html', label: '✏️ 스토리 만들기', id: 'editor' },
+          { href: 'player.html', label: '▶️ 체험', id: 'player' },
+          { href: 'manager.html', label: '💾 내 스토리', id: 'manager' }
+        ],
+        tools: [
+          { href: 'https://storywaver.vercel.app/', label: '🗺️ 스토리 맵', external: true },
+          { href: 'https://gemini.google.com/gem/1nW0ghsBuhUtO_O2cJo2ORGtoMJVB-t5_?usp=sharing', label: '🧭 스토리 설계 GEM', external: true }
+        ]
+      };
+
+      const render = (key) => {
+        if (!submenuBar) return;
+        const items = menus[key] || [];
+        if (!items.length) {
+          submenuBar.classList.remove('show');
+          submenuBar.innerHTML = '';
+          return;
+        }
+        submenuBar.innerHTML = items.map(item => `
+          <a href="${item.href}" ${item.external ? 'target="_blank" rel="noopener noreferrer"' : ''} class="nav-link ${item.id === activePage ? 'active' : ''}">
+            ${item.label}
+          </a>
+        `).join('');
+        submenuBar.classList.add('show');
+      };
+
+      toggles.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const key = btn.dataset.menuToggle;
+          if (openKey === key) {
+            submenuBar?.classList.remove('show');
+            submenuBar.innerHTML = '';
+            openKey = null;
+            return;
+          }
+          openKey = key;
+          render(key);
+        });
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!submenuBar || !submenuBar.classList.contains('show')) return;
+        if (e.target.closest('[data-menu-toggle]') || e.target.closest('#submenuBar')) return;
+        submenuBar.classList.remove('show');
+        submenuBar.innerHTML = '';
+        openKey = null;
+      });
+    })('manager');
+  </script>
 </body>
 </html>

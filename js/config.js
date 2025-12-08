@@ -4,7 +4,7 @@
 
 const CONFIG = {
   // Google Apps Script 웹앱 URL (배포 후 받은 URL 입력)
-  GOOGLE_APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzzM9BzGn0ha5F2TakJRySl1Ak61y000qrgT3pXGv2JUXQ-Rc4WE1wS01S9PWOw3nGnxw/exec',
+  GOOGLE_APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbyqotAjp67GY07jtrg-_-0gBS-94Mx7PjuL88zF8BOP6EUR1uCX4RV2Gs1e-5GnYpWI7A/exec',
 
   // 스프레드시트 웹앱 URL (GOOGLE_APPS_SCRIPT_URL과 동일)
   get SPREADSHEET_WEB_APP_URL() {

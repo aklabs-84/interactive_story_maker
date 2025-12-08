@@ -114,6 +114,7 @@ const PlayerModule = {
       neutral: 'from-purple-500/20 to-violet-500/20 border-purple-500/50'
     };
     const emojis = { happy: '🎉', sad: '😢', neutral: '🏁' };
+    const endingMessage = node.ending?.message || node.text || '';
 
     const colorClass = colors[node.ending?.type] || colors.neutral;
     const endingEmoji = emojis[node.ending?.type] || '🏁';
@@ -130,14 +131,7 @@ const PlayerModule = {
           </div>
         ` : ''}
 
-        <div class="mb-8 p-6 bg-white/5 rounded-lg">
-          <div class="flex items-start gap-4">
-            <div class="text-4xl">${node.emoji || '📖'}</div>
-            <p class="text-lg leading-relaxed">${node.text}</p>
-          </div>
-        </div>
-
-        <div class="ending-card p-8 bg-gradient-to-br ${colorClass} rounded-xl border text-center">
+        <div class="ending-card mt-6 p-8 bg-gradient-to-br ${colorClass} rounded-xl border text-center">
           ${node.ending?.image ? `
             <div class="ending-image mb-6">
               <img src="${node.ending.image}" alt="엔딩 이미지" class="w-full rounded-xl shadow-lg" style="max-width: 400px; margin: 0 auto; display: block;" onerror="console.error('엔딩 이미지 로드 실패:', this.src); this.style.display='none'">
@@ -145,7 +139,7 @@ const PlayerModule = {
           ` : ''}
           <div class="text-6xl mb-4">${endingEmoji}</div>
           <h2 class="text-2xl font-bold mb-2">${node.ending?.title || '엔딩'}</h2>
-          ${node.ending?.message ? `<p class="text-slate-300">${node.ending.message}</p>` : ''}
+          ${endingMessage ? `<p class="text-slate-300">${endingMessage}</p>` : ''}
         </div>
         
         <div class="controls mt-8 flex flex-wrap justify-center gap-3">

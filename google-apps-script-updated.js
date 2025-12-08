@@ -6,7 +6,7 @@
 
 // ⚠️ 설정: 스프레드시트 ID와 드라이브 폴더 ID를 입력하세요
 const SPREADSHEET_ID = '1PezTZ3hDuepfQjy9vwjdZWl0VSWv02c6MIYVQua-0sw';
-const STORY_FOLDER_ID = 'YOUR_DRIVE_FOLDER_ID'; // 스토리 JSON 파일을 저장할 구글 드라이브 폴더 ID
+const STORY_FOLDER_ID = '174hGHguOBLkPM7Ujy0S6OBHKopacqD9O'; // 스토리 JSON 파일을 저장할 구글 드라이브 폴더 ID
 
 // 이미지 최대 크기 (2MB) - 더 이상 사용 안함
 const MAX_IMAGE_SIZE = 2 * 1024 * 1024;
@@ -38,15 +38,11 @@ function doPost(e) {
       return saveStory(ss, data);
     }
 
-    return ContentService
-      .createTextOutput(JSON.stringify({ status: 'error', message: '알 수 없는 액션입니다.' }))
-      .setMimeType(ContentService.MimeType.JSON);
+    return createJsonResponse({ status: 'error', message: '알 수 없는 액션입니다.' });
 
   } catch (err) {
     Logger.log('Error in doPost: ' + err);
-    return ContentService
-      .createTextOutput(JSON.stringify({ status: 'error', message: String(err) }))
-      .setMimeType(ContentService.MimeType.JSON);
+    return createJsonResponse({ status: 'error', message: String(err) });
   }
 }
 
@@ -108,13 +104,13 @@ function saveStory(ss, data) {
     if (!sh) {
       sh = ss.insertSheet(sheetName);
 
-      // 헤더 설정
-      sh.getRange(1, 1, 1, 7).setValues([[
-        '저장시간', '스토리ID', '제목', '작성자', '설명', '테마', 'Drive파일URL'
-      ]]);
+        // 헤더 설정 (스토리 JSON 추가)
+        sh.getRange(1, 1, 1, 8).setValues([[
+          '저장시간', '스토리ID', '제목', '작성자', '설명', '테마', 'Drive파일URL', '스토리JSON'
+        ]]);
 
       // 헤더 스타일링
-      const headerRange = sh.getRange(1, 1, 1, 7);
+      const headerRange = sh.getRange(1, 1, 1, 8);
       headerRange.setFontWeight('bold');
       headerRange.setBackground('#4285f4');
       headerRange.setFontColor('white');
@@ -128,6 +124,15 @@ function saveStory(ss, data) {
       sh.setColumnWidth(5, 300);  // 설명
       sh.setColumnWidth(6, 100);  // 테마
       sh.setColumnWidth(7, 400);  // Drive파일URL
+      sh.setColumnWidth(8, 400);  // 스토리JSON
+    }
+
+    // 스키마 보정: 기존 시트에 스토리JSON 열이 없으면 추가
+    const headerCheckRange = sh.getRange(1, 1, 1, sh.getLastColumn());
+    const headerValues = headerCheckRange.getValues()[0];
+    if (headerValues.length < 8) {
+      sh.insertColumnAfter(7);
+      sh.getRange(1, 8).setValue('스토리JSON');
     }
 
     // 기존 스토리 찾기 (동일 ID 업데이트)
@@ -149,12 +154,13 @@ function saveStory(ss, data) {
       data.author || '익명',
       data.description || '',
       data.theme || '',
-      fileUrl
+      fileUrl,
+      storyJsonString // Drive가 없어도 데이터를 복구할 수 있도록 JSON을 함께 저장
     ];
 
     if (existingRow > 0) {
       // 기존 행 업데이트
-      const range = sh.getRange(existingRow, 1, 1, 7);
+      const range = sh.getRange(existingRow, 1, 1, 8);
       range.setValues([rowData]);
       Logger.log('Spreadsheet row updated: ' + existingRow);
     } else {
@@ -163,19 +169,15 @@ function saveStory(ss, data) {
       Logger.log('New spreadsheet row added');
     }
 
-    return ContentService
-      .createTextOutput(JSON.stringify({
-        status: 'success',
-        message: '저장 완료!',
-        fileUrl: fileUrl
-      }))
-      .setMimeType(ContentService.MimeType.JSON);
+    return createJsonResponse({
+      status: 'success',
+      message: '저장 완료!',
+      fileUrl: fileUrl
+    });
 
   } catch (err) {
     Logger.log('Error in saveStory: ' + err);
-    return ContentService
-      .createTextOutput(JSON.stringify({ status: 'error', message: String(err) }))
-      .setMimeType(ContentService.MimeType.JSON);
+    return createJsonResponse({ status: 'error', message: String(err) });
   }
 }
 
@@ -194,19 +196,15 @@ function doGet(e) {
     } else if (action === 'latest') {
       return loadLatestStory();
     } else {
-      return ContentService
-        .createTextOutput(JSON.stringify({
-          status: 'success',
-          message: 'Interactive Story Maker API is working!'
-        }))
-        .setMimeType(ContentService.MimeType.JSON);
+      return createJsonResponse({
+        status: 'success',
+        message: 'Interactive Story Maker API is working!'
+      });
     }
 
   } catch (err) {
     Logger.log('Error in doGet: ' + err);
-    return ContentService
-      .createTextOutput(JSON.stringify({ status: 'error', message: String(err) }))
-      .setMimeType(ContentService.MimeType.JSON);
+    return createJsonResponse({ status: 'error', message: String(err) });
   }
 }
 
@@ -238,28 +236,23 @@ function loadStory(storyId) {
             author: values[row][3],
             description: values[row][4],
             theme: values[row][5],
-            fileUrl: values[row][6]  // Drive 파일 URL
+            fileUrl: values[row][6],  // Drive 파일 URL
+            storyJson: values[row][7] // 시트에 저장된 JSON (Drive 미사용 시)
           };
 
           Logger.log('Story found: ' + storyId);
 
-          return ContentService
-            .createTextOutput(JSON.stringify({ status: 'success', data: storyData }))
-            .setMimeType(ContentService.MimeType.JSON);
+          return createJsonResponse({ status: 'success', data: storyData });
         }
       }
     }
 
     Logger.log('Story not found: ' + storyId);
-    return ContentService
-      .createTextOutput(JSON.stringify({ status: 'error', message: '스토리를 찾을 수 없습니다.' }))
-      .setMimeType(ContentService.MimeType.JSON);
+    return createJsonResponse({ status: 'error', message: '스토리를 찾을 수 없습니다.' });
 
   } catch (err) {
     Logger.log('Error in loadStory: ' + err);
-    return ContentService
-      .createTextOutput(JSON.stringify({ status: 'error', message: String(err) }))
-      .setMimeType(ContentService.MimeType.JSON);
+    return createJsonResponse({ status: 'error', message: String(err) });
   }
 }
 
@@ -277,9 +270,7 @@ function loadLatestStory() {
       .sort((a, b) => b.getName().localeCompare(a.getName()));
 
     if (dateSheets.length === 0) {
-      return ContentService
-        .createTextOutput(JSON.stringify({ status: 'error', message: '저장된 스토리가 없습니다.' }))
-        .setMimeType(ContentService.MimeType.JSON);
+      return createJsonResponse({ status: 'error', message: '저장된 스토리가 없습니다.' });
     }
 
     // 최신 시트에서 마지막 데이터 가져오기
@@ -297,26 +288,21 @@ function loadLatestStory() {
           author: lastRow[3],
           description: lastRow[4],
           theme: lastRow[5],
-          fileUrl: lastRow[6]  // Drive 파일 URL
+          fileUrl: lastRow[6],  // Drive 파일 URL
+          storyJson: lastRow[7] // 시트에 저장된 JSON (Drive 미사용 시)
         };
 
         Logger.log('Latest story found: ' + storyData.storyId);
 
-        return ContentService
-          .createTextOutput(JSON.stringify({ status: 'success', data: storyData }))
-          .setMimeType(ContentService.MimeType.JSON);
+        return createJsonResponse({ status: 'success', data: storyData });
       }
     }
 
-    return ContentService
-      .createTextOutput(JSON.stringify({ status: 'error', message: '저장된 스토리가 없습니다.' }))
-      .setMimeType(ContentService.MimeType.JSON);
+    return createJsonResponse({ status: 'error', message: '저장된 스토리가 없습니다.' });
 
   } catch (err) {
     Logger.log('Error in loadLatestStory: ' + err);
-    return ContentService
-      .createTextOutput(JSON.stringify({ status: 'error', message: String(err) }))
-      .setMimeType(ContentService.MimeType.JSON);
+    return createJsonResponse({ status: 'error', message: String(err) });
   }
 }
 
@@ -325,6 +311,22 @@ function loadLatestStory() {
 // ==========================================
 function doOptions() {
   return ContentService.createTextOutput('').setMimeType(ContentService.MimeType.JSON);
+}
+
+// ==========================================
+// CORS 유틸
+// ==========================================
+function addCorsHeaders(output) {
+  // ContentService.TextOutput에는 setHeader가 없어서 CORS 헤더를 직접 넣을 수 없습니다.
+  // 대신 웹앱을 "모든 사용자"로 배포하면 기본 CORS 정책으로 접근 가능합니다.
+  return output;
+}
+
+function createJsonResponse(payload) {
+  const output = ContentService
+    .createTextOutput(JSON.stringify(payload))
+    .setMimeType(ContentService.MimeType.JSON);
+  return output;
 }
 
 // ==========================================

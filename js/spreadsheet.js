@@ -46,17 +46,26 @@ const SpreadsheetModule = {
 
       const result = await response.json();
 
-      if (result.status === 'success' && result.data && result.data.fileUrl) {
-        // 2. Drive URL에서 JSON 파일 다운로드
-        const fileUrl = result.data.fileUrl;
-        const jsonResponse = await fetch(fileUrl);
+      if (result.status === 'success' && result.data) {
+        // 2-a. 시트에 저장된 JSON이 있으면 CORS 이슈 없이 바로 사용
+        if (result.data.storyJson) {
+          const storyJson = JSON.parse(result.data.storyJson);
+          hideLoading();
+          return storyJson;
+        }
 
-        if (!jsonResponse.ok) throw new Error('JSON 파일 다운로드 실패');
-
-        const storyJson = await jsonResponse.json();
-        hideLoading();
-
-        return storyJson;
+        // 2-b. Drive URL 시도 (실패 시 null 반환 → 호출부에서 처리)
+        if (result.data.fileUrl) {
+          try {
+            const jsonResponse = await fetch(result.data.fileUrl);
+            if (!jsonResponse.ok) throw new Error('JSON 파일 다운로드 실패');
+            const storyJson = await jsonResponse.json();
+            hideLoading();
+            return storyJson;
+          } catch (err) {
+            console.error('Drive JSON 다운로드 실패:', err);
+          }
+        }
       }
 
       hideLoading();
@@ -81,20 +90,34 @@ const SpreadsheetModule = {
 
       const result = await response.json();
 
-      if (result.status === 'success' && result.data && result.data.fileUrl) {
-        // 2. Drive URL에서 JSON 파일 다운로드
-        const fileUrl = result.data.fileUrl;
-        const jsonResponse = await fetch(fileUrl);
+      if (result.status === 'success' && result.data) {
+        // 2-a. 시트에 저장된 JSON을 우선 사용 (Drive CORS 우회)
+        if (result.data.storyJson) {
+          const storyJson = JSON.parse(result.data.storyJson);
+          hideLoading();
+          return {
+            story: storyJson,
+            storyId: result.data.storyId
+          };
+        }
 
-        if (!jsonResponse.ok) throw new Error('JSON 파일 다운로드 실패');
+        // 2-b. Drive URL 시도 (실패 시 null 반환)
+        if (result.data.fileUrl) {
+          try {
+            const jsonResponse = await fetch(result.data.fileUrl);
+            if (!jsonResponse.ok) throw new Error('JSON 파일 다운로드 실패');
 
-        const storyJson = await jsonResponse.json();
-        hideLoading();
+            const storyJson = await jsonResponse.json();
+            hideLoading();
 
-        return {
-          story: storyJson,
-          storyId: result.data.storyId
-        };
+            return {
+              story: storyJson,
+              storyId: result.data.storyId
+            };
+          } catch (err) {
+            console.error('Drive JSON 다운로드 실패:', err);
+          }
+        }
       }
 
       hideLoading();
