@@ -51,7 +51,11 @@ const ThemeModule = {
 
     this.currentTheme = themeName;
     this.initAnimation(theme.animation);
-    localStorage.setItem(STORAGE_KEYS.THEME, themeName);
+    try {
+      localStorage.setItem(STORAGE_KEYS.THEME, themeName);
+    } catch (e) {
+      console.warn('테마 저장 실패(저장소 접근 불가):', e);
+    }
   },
 
   initAnimation(animationType) {
@@ -74,20 +78,17 @@ const ThemeModule = {
       const size = Math.random() * 4 + 1.5;
       const duration = Math.random() * 6 + 10; // 10~16s
       const delay = Math.random() * 6;
-      const drift = Math.random() * 60 - 30;
       span.style.cssText = `
         position: absolute; top: -10px; left: ${Math.random() * 100}vw;
         width: ${size}px; height: ${size}px; background: rgba(255,255,255,0.9);
         border-radius: 50%; filter: drop-shadow(0 0 6px rgba(255,255,255,0.5));
         opacity: 0.85;
-        animation: fall ${duration}s linear ${delay}s infinite, drift ${duration}s ease-in-out ${delay}s infinite;
-        transform: translateX(0);
+        animation: fall ${duration}s linear ${delay}s infinite;
       `;
       container.appendChild(span);
     }
     this.addAnimationStyle('snowAnimation', `
       @keyframes fall { to { transform: translateY(110vh) rotate(360deg); } }
-      @keyframes drift { 0% { transform: translateX(0); } 50% { transform: translateX(${drift}px); } 100% { transform: translateX(0); } }
     `);
   },
 
