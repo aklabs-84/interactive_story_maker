@@ -34,9 +34,11 @@ const SpreadsheetModule = {
   },
 
   // 스프레드시트에서 특정 스토리 불러오기 (Drive에서 JSON 다운로드)
-  async loadStory(storyId) {
+  // options.showLoader: false로 주면 로딩 오버레이를 띄우지 않음
+  async loadStory(storyId, options = {}) {
+    const showLoader = options.showLoader !== false;
     try {
-      showLoading('스토리를 불러오는 중...');
+      if (showLoader) showLoading('스토리를 불러오는 중...');
 
       // 1. 스프레드시트에서 Drive URL 가져오기
       const url = `${CONFIG.GOOGLE_APPS_SCRIPT_URL}?action=load&storyId=${encodeURIComponent(storyId)}`;
@@ -50,7 +52,7 @@ const SpreadsheetModule = {
         // 2-a. 시트에 저장된 JSON이 있으면 CORS 이슈 없이 바로 사용
         if (result.data.storyJson) {
           const storyJson = JSON.parse(result.data.storyJson);
-          hideLoading();
+          if (showLoader) hideLoading();
           return storyJson;
         }
 
@@ -60,7 +62,7 @@ const SpreadsheetModule = {
             const jsonResponse = await fetch(result.data.fileUrl);
             if (!jsonResponse.ok) throw new Error('JSON 파일 다운로드 실패');
             const storyJson = await jsonResponse.json();
-            hideLoading();
+            if (showLoader) hideLoading();
             return storyJson;
           } catch (err) {
             console.error('Drive JSON 다운로드 실패:', err);
@@ -68,19 +70,21 @@ const SpreadsheetModule = {
         }
       }
 
-      hideLoading();
+      if (showLoader) hideLoading();
       return null;
     } catch (error) {
-      hideLoading();
+      if (showLoader) hideLoading();
       console.error('❌ 스토리 불러오기 오류:', error);
       return null;
     }
   },
 
   // 최신 스토리 불러오기 (Drive에서 JSON 다운로드)
-  async loadLatestStory() {
+  // options.showLoader: false로 주면 로딩 오버레이를 띄우지 않음
+  async loadLatestStory(options = {}) {
+    const showLoader = options.showLoader !== false;
     try {
-      showLoading('최신 스토리를 불러오는 중...');
+      if (showLoader) showLoading('최신 스토리를 불러오는 중...');
 
       // 1. 스프레드시트에서 최신 스토리 정보 가져오기
       const url = `${CONFIG.GOOGLE_APPS_SCRIPT_URL}?action=latest`;
@@ -94,7 +98,7 @@ const SpreadsheetModule = {
         // 2-a. 시트에 저장된 JSON을 우선 사용 (Drive CORS 우회)
         if (result.data.storyJson) {
           const storyJson = JSON.parse(result.data.storyJson);
-          hideLoading();
+          if (showLoader) hideLoading();
           return {
             story: storyJson,
             storyId: result.data.storyId
@@ -108,7 +112,7 @@ const SpreadsheetModule = {
             if (!jsonResponse.ok) throw new Error('JSON 파일 다운로드 실패');
 
             const storyJson = await jsonResponse.json();
-            hideLoading();
+            if (showLoader) hideLoading();
 
             return {
               story: storyJson,
@@ -120,10 +124,10 @@ const SpreadsheetModule = {
         }
       }
 
-      hideLoading();
+      if (showLoader) hideLoading();
       return null;
     } catch (error) {
-      hideLoading();
+      if (showLoader) hideLoading();
       console.error('❌ 최신 스토리 불러오기 오류:', error);
       return null;
     }

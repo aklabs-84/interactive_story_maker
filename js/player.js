@@ -315,7 +315,7 @@ async function initPlayerPage() {
     
     if (!story) {
       // 로컬에 없으면 스프레드시트에서 불러오기
-      story = await SpreadsheetModule.loadStory(storyId);
+      story = await SpreadsheetModule.loadStory(storyId, { showLoader: false });
     }
     
     if (story) {
