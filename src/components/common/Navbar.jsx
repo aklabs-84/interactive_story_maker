@@ -1,3 +1,4 @@
+import React from 'react';
 import { Home, Edit3, Play, Folder, Map, Compass, Moon, Sun, Volume2, VolumeX } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useConfigStore } from '../../store/useConfigStore';
