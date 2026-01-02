@@ -35,12 +35,12 @@ const StoryNode = ({ nodeId, parentId, level = 0 }) => {
                     <div className="flex items-center gap-3">
                         <button
                             onClick={() => setIsCollapsed(!isCollapsed)}
-                            className="p-1 hover:bg-white/5 rounded transition"
+                            className="p-1 hover:bg-slate-100 dark:hover:bg-white/5 rounded transition text-slate-500 dark:text-slate-400"
                         >
                             {isCollapsed ? <ChevronRight size={18} /> : <ChevronDown size={18} />}
                         </button>
                         <span className="text-xl">{node.id === 'start' ? '🌟' : '📄'}</span>
-                        <h4 className="font-bold text-slate-200">
+                        <h4 className="font-bold text-slate-800 dark:text-slate-200">
                             {node.id === 'start' ? '시작 지점' : `선택지 분기 (Level ${level})`}
                         </h4>
                     </div>
@@ -64,7 +64,7 @@ const StoryNode = ({ nodeId, parentId, level = 0 }) => {
 
                         {/* Node Image Upload */}
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-400">배경 이미지 (선택)</label>
+                            <label className="text-sm font-medium text-slate-600 dark:text-slate-400">배경 이미지 (선택)</label>
                             {node.image ? (
                                 <div className="relative group rounded-xl overflow-hidden border border-white/10 aspect-video bg-black/20">
                                     <img src={node.image} alt="Node Preview" className="w-full h-full object-cover" />
@@ -134,21 +134,21 @@ const StoryNode = ({ nodeId, parentId, level = 0 }) => {
             {!isCollapsed && (node.choices?.length ?? 0) > 0 && (
                 <div className="flex flex-col gap-8 relative pb-8">
                     {/* Visual path line */}
-                    <div className="absolute left-4 top-0 bottom-8 w-px bg-white/10 ml-[2px]"></div>
+                    <div className="absolute left-4 top-0 bottom-8 w-px bg-slate-200 dark:bg-white/10 ml-[2px]"></div>
 
                     {node.choices?.map((choice, idx) => (
                         <div key={choice.nextId} className="relative">
                             {/* Connector line */}
-                            <div className="absolute left-4 top-8 w-4 h-px bg-white/10 ml-[2px]"></div>
+                            <div className="absolute left-4 top-8 w-4 h-px bg-slate-200 dark:bg-white/10 ml-[2px]"></div>
 
                             <div className="ml-12 mb-2 flex items-center gap-2">
-                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${choice.letter === 'a' ? 'bg-cyan-500/20 text-cyan-400' : 'bg-indigo-500/20 text-indigo-400'}`}>
+                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${choice.letter === 'a' ? 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-700 dark:text-cyan-400' : 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-400'}`}>
                                     Option {choice.letter}
                                 </span>
                                 <input
                                     type="text"
                                     placeholder="선택지 라벨 입력..."
-                                    className="bg-transparent border-none text-sm text-slate-300 focus:ring-0 p-0 w-full"
+                                    className="bg-transparent border-none text-sm text-slate-700 dark:text-slate-300 focus:ring-0 p-0 w-full placeholder:text-slate-400"
                                     value={choice.label}
                                     onChange={(e) => {
                                         const newChoices = [...(node.choices || [])];

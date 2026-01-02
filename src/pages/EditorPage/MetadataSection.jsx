@@ -6,10 +6,10 @@ const MetadataSection = () => {
     const { metadata, setMetadata } = useEditorStore();
 
     return (
-        <Card className="mb-8">
+        <Card className="mb-8 p-8">
             <div className="flex items-center gap-2 mb-6">
-                <span className="text-xl">📋</span>
-                <h3 className="text-lg font-bold">기본 정보</h3>
+                <span className="text-2xl">📋</span>
+                <h3 className="text-xl font-bold text-slate-800 dark:text-white">기본 정보</h3>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

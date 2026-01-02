@@ -96,8 +96,8 @@ const EditorPage = () => {
             <div className="max-w-4xl mx-auto">
                 <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                     <div>
-                        <h2 className="text-3xl font-bold text-white">✏️ 스토리 만들기</h2>
-                        <p className="text-slate-400 mt-1">
+                        <h2 className="text-3xl font-bold text-slate-900 dark:text-white">✏️ 스토리 만들기</h2>
+                        <p className="text-slate-600 dark:text-slate-400 mt-1 text-sm">
                             {editingStoryId ? '기존 스토리를 수정 중입니다.' : '상상력을 발휘해 매력적인 분기점들을 만들어보세요.'}
                         </p>
                     </div>
@@ -105,7 +105,7 @@ const EditorPage = () => {
                     <div className="flex items-center gap-2 flex-wrap">
                         <label className="cursor-pointer">
                             <input type="file" className="hidden" accept=".json" onChange={handleImport} />
-                            <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-medium transition cursor-pointer">
+                            <div className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 rounded-lg text-xs font-medium transition cursor-pointer text-slate-600 dark:text-slate-300">
                                 <Upload size={14} /> JSON 불러오기
                             </div>
                         </label>
@@ -123,16 +123,16 @@ const EditorPage = () => {
                 <MetadataSection />
 
                 <div className="mt-12 mb-20">
-                    <div className="flex items-center gap-2 mb-6">
+                    <div className="flex items-center gap-2 mb-6 px-1">
                         <span className="text-xl">🌟</span>
-                        <h3 className="text-lg font-bold">스토리 구조 설계</h3>
+                        <h3 className="text-xl font-bold text-slate-900 dark:text-white">스토리 구조 설계</h3>
                     </div>
 
                     <StoryNode nodeId="start" />
                 </div>
 
                 {/* Footer Actions */}
-                <div className="fixed bottom-0 left-0 right-0 bg-slate-900/80 backdrop-blur-lg border-t border-white/10 py-4 px-6 z-40">
+                <div className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border-t border-slate-200 dark:border-white/10 py-4 px-6 z-40 transition-colors duration-300">
                     <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
                         <Button variant="danger" size="sm" onClick={() => {
                             if (confirm('정말 모든 내용을 지우시겠습니까?')) resetEditor();

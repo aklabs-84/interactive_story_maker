@@ -79,14 +79,14 @@ const ManagerPage = () => {
             <div className="max-w-5xl mx-auto">
                 <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
                     <div>
-                        <h2 className="text-3xl font-bold text-white">💾 내 스토리 보관함</h2>
-                        <p className="text-slate-400 mt-1">저장된 스토리를 관리하고 다른 사람들과 공유해보세요.</p>
+                        <h2 className="text-3xl font-bold text-slate-900 dark:text-white">💾 내 스토리 보관함</h2>
+                        <p className="text-slate-600 dark:text-slate-400 mt-1">저장된 스토리를 관리하고 다른 사람들과 공유해보세요.</p>
                     </div>
 
                     <div className="flex items-center gap-3">
                         <label className="cursor-pointer">
                             <input type="file" className="hidden" accept=".json" onChange={handleImport} />
-                            <div className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm font-medium transition cursor-pointer">
+                            <div className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 rounded-lg text-sm font-medium transition cursor-pointer text-slate-600 dark:text-slate-300">
                                 <Upload size={16} /> JSON 불러오기
                             </div>
                         </label>
@@ -96,21 +96,21 @@ const ManagerPage = () => {
                     </div>
                 </header>
 
-                <div className="mb-8 flex items-center bg-white/5 border border-white/10 rounded-2xl px-4 py-3 focus-within:ring-2 focus-within:ring-cyan-500/50 transition-all">
-                    <Search size={20} className="text-slate-500 mr-3" />
+                <div className="mb-8 flex items-center bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl px-4 py-3 focus-within:ring-2 focus-within:ring-cyan-500/30 dark:focus-within:ring-cyan-500/50 shadow-sm dark:shadow-none transition-all">
+                    <Search size={20} className="text-slate-400 dark:text-slate-500 mr-3" />
                     <input
                         type="text"
                         placeholder="스토리 제목이나 작가 이름으로 검색..."
-                        className="bg-transparent border-none text-white placeholder:text-slate-500 w-full focus:ring-0 outline-none"
+                        className="bg-transparent border-none text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 w-full focus:ring-0 outline-none"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
 
                 {filteredStories.length === 0 ? (
-                    <div className="text-center py-20 bg-white/5 rounded-3xl border border-dashed border-white/10">
+                    <div className="text-center py-20 bg-slate-100 dark:bg-white/5 rounded-3xl border border-dashed border-slate-300 dark:border-white/10">
                         <div className="text-6xl mb-4">📚</div>
-                        <p className="text-slate-400 text-lg">저장된 스토리가 없습니다.</p>
+                        <p className="text-slate-600 dark:text-slate-400 text-lg">저장된 스토리가 없습니다.</p>
                         <Button variant="ghost" className="mt-4" onClick={() => navigate('/editor')}>
                             첫 번째 스토리를 만들어보세요!
                         </Button>
@@ -143,23 +143,23 @@ const ManagerPage = () => {
 
 const StoryCard = ({ story, onPlay, onEdit, onDelete, onShare, onExport, isSharing }) => {
     return (
-        <Card className="hover:border-white/20 transition-all">
+        <Card className="hover:border-slate-300 dark:hover:border-white/20 transition-all p-8">
             <div className="flex flex-col h-full">
                 <div className="flex items-start justify-between mb-4">
                     <div>
-                        <h3 className="text-xl font-bold text-white mb-1">{story.metadata.title}</h3>
-                        <p className="text-sm text-slate-400">by {story.metadata.author || '익명'}</p>
+                        <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1">{story.metadata.title}</h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">by {story.metadata.author || '익명'}</p>
                     </div>
                     <div className="px-3 py-1 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded-full text-[10px] font-bold uppercase tracking-wider">
                         {story.metadata.theme || 'default'}
                     </div>
                 </div>
 
-                <p className="text-sm text-slate-500 line-clamp-2 mb-6 flex-1">
+                <p className="text-sm text-slate-600 dark:text-slate-500 line-clamp-2 mb-6 flex-1">
                     {story.metadata.description || '설명이 없습니다.'}
                 </p>
 
-                <div className="flex items-center justify-between pt-4 border-t border-white/5">
+                <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-white/5">
                     <div className="flex items-center gap-1">
                         <IconButton onClick={onPlay} icon={<Play size={16} />} title="플레이" color="text-cyan-400 hover:bg-cyan-500/10" />
                         <IconButton onClick={onEdit} icon={<Edit3 size={16} />} title="편집" color="text-amber-400 hover:bg-amber-500/10" />

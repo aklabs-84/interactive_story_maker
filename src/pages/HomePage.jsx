@@ -59,8 +59,8 @@ const HomePage = () => {
                     />
                 </div>
 
-                <div className="mt-20 px-8 py-4 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl">
-                    <p className="text-slate-500 dark:text-slate-400 text-sm flex items-center gap-2">
+                <div className="mt-20 px-8 py-4 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl shadow-sm dark:shadow-none">
+                    <p className="text-slate-600 dark:text-slate-500 text-sm flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span>
                         💡 지금 바로 첫 장면을 작성하고 친구들에게 공유해보세요!
                     </p>
