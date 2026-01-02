@@ -3,7 +3,7 @@ import Navbar from '../common/Navbar';
 
 const CommonLayout = ({ children }) => {
     return (
-        <div className="min-h-screen bg-slate-950 text-slate-200 selection:bg-cyan-500/30">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-200 selection:bg-cyan-500/30 transition-colors duration-300">
             {/* Background Effect */}
             <div className="fixed inset-0 pointer-events-none">
                 <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-[128px]"></div>
