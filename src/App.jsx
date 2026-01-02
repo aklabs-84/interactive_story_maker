@@ -18,7 +18,7 @@ function App() {
     }, [isDarkMode]);
 
     return (
-        <Router basename={import.meta.env.BASE_URL}>
+        <Router>
             <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/editor" element={<EditorPage />} />

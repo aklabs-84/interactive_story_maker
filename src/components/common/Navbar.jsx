@@ -13,7 +13,7 @@ const Navbar = () => {
     const { isDarkMode, toggleDarkMode, soundEnabled, toggleSound } = useConfigStore();
 
     return (
-        <header className="sticky top-0 z-50 bg-slate-900/80 backdrop-blur-md border-b border-white/10">
+        <header className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-white/10 transition-colors duration-300">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16 md:h-20 gap-4">
                     <Link to="/" className="flex items-center gap-3">
@@ -21,8 +21,8 @@ const Navbar = () => {
                             <span className="text-xl">📖</span>
                         </div>
                         <div className="hidden sm:block">
-                            <h1 className="text-lg font-bold tracking-tight text-white">스토리 메이커</h1>
-                            <p className="text-xs text-slate-400">인터랙티브 스토리 월드</p>
+                            <h1 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">스토리 메이커</h1>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">인터랙티브 스토리 월드</p>
                         </div>
                     </Link>
 
@@ -58,7 +58,7 @@ const Navbar = () => {
 const NavLink = ({ to, icon, label }) => (
     <Link
         to={to}
-        className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-white/5 transition"
+        className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-colors duration-200"
     >
         {icon}
         <span>{label}</span>
@@ -69,7 +69,7 @@ const IconButton = ({ onClick, icon, title }) => (
     <button
         onClick={onClick}
         title={title}
-        className="w-10 h-10 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-slate-300 hover:text-white transition"
+        className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all duration-200"
     >
         {icon}
     </button>
