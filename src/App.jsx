@@ -1,10 +1,22 @@
+import React, { useEffect } from 'react';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import EditorPage from './pages/EditorPage';
 import PlayerPage from './pages/PlayerPage';
 import ManagerPage from './pages/ManagerPage';
+import { useConfigStore } from './store/useConfigStore';
 
 function App() {
+    const { isDarkMode } = useConfigStore();
+
+    useEffect(() => {
+        if (isDarkMode) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    }, [isDarkMode]);
+
     return (
         <Router>
             <Routes>
